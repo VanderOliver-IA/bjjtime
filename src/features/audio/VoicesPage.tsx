@@ -40,6 +40,78 @@ const suggestedPhrases: Array<{
   },
 ]
 
+const voicePhraseBundles: Array<{
+  id: string
+  title: string
+  description: string
+  phrases: Array<{
+    eventType: AudioEventType
+    label: string
+    messageText: string
+  }>
+}> = [
+  {
+    id: 'warmup',
+    title: 'Aquecimento',
+    description: 'Entrada forte, ritmo inicial e chamada para comecar.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Vamos aquecer', messageText: 'Vamos aquecer.' },
+      {
+        eventType: 'STEP_START',
+        label: 'Movimenta',
+        messageText: 'Vamos la! Corpo ativo, sem moleza!',
+      },
+      {
+        eventType: 'STEP_WARNING_30',
+        label: 'Aquecimento 30',
+        messageText: 'Faltam so 30 segundos.',
+      },
+      { eventType: 'STEP_END', label: 'Troca aquecimento', messageText: 'Acabou!' },
+    ],
+  },
+  {
+    id: 'pressure',
+    title: 'Pressao',
+    description: 'Frases para drill forte, intensidade e cobranca tecnica.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Pressiona', messageText: 'Vamos la! Sem moleza!' },
+      { eventType: 'STEP_WARNING_20', label: 'Mantem pressao', messageText: 'Mantem a pressao!' },
+      { eventType: 'STEP_WARNING_5', label: 'Fechando', messageText: '5 segundos!' },
+      { eventType: 'STEP_END', label: 'Acabou pressao', messageText: 'Acabou!' },
+    ],
+  },
+  {
+    id: 'rest',
+    title: 'Descanso',
+    description: 'Pausa guiada para recuperar e preparar a proxima etapa.',
+    phrases: [
+      { eventType: 'REST_START', label: 'Respira', messageText: 'Respira. Recupera.' },
+      {
+        eventType: 'REST_WARNING',
+        label: 'Volta ja',
+        messageText: 'Faltam so 10 segundos de descanso.',
+      },
+      { eventType: 'STEP_COUNTDOWN_3', label: 'Descanso 3', messageText: '3' },
+      { eventType: 'STEP_COUNTDOWN_2', label: 'Descanso 2', messageText: '2' },
+      { eventType: 'STEP_COUNTDOWN_1', label: 'Descanso 1', messageText: '1' },
+    ],
+  },
+  {
+    id: 'finish',
+    title: 'Encerramento',
+    description: 'Chamadas de fim, troca e fechamento do treino.',
+    phrases: [
+      { eventType: 'STEP_TRANSITION', label: 'Troca', messageText: 'Troca!' },
+      { eventType: 'PROTOCOL_END', label: 'Fim do treino', messageText: 'Acabou! Boa!' },
+      {
+        eventType: 'PROTOCOL_CANCELLED',
+        label: 'Encerrado manualmente',
+        messageText: 'Treino encerrado.',
+      },
+    ],
+  },
+]
+
 export function VoicesPage() {
   const voiceProfiles = useAppStore((state) => state.voiceProfiles)
   const defaultVolume = useAppStore((state) => state.settings.defaultVolume)
@@ -92,6 +164,26 @@ export function VoicesPage() {
     setDraft((currentDraft) => ({
       ...currentDraft,
       phrases: [...currentDraft.phrases, createVoicePhrase(partial)],
+    }))
+  }
+
+  function addBundle(bundleId: string) {
+    const bundle = voicePhraseBundles.find((item) => item.id === bundleId)
+
+    if (!bundle) {
+      return
+    }
+
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      phrases: [
+        ...currentDraft.phrases,
+        ...bundle.phrases.map((phrase) =>
+          createVoicePhrase({
+            ...phrase,
+          }),
+        ),
+      ],
     }))
   }
 
@@ -249,6 +341,19 @@ export function VoicesPage() {
           ))}
         </div>
 
+        <div className="voice-template-grid">
+          {voicePhraseBundles.map((bundle) => (
+            <button
+              key={bundle.id}
+              className="voice-template-card"
+              onClick={() => addBundle(bundle.id)}
+            >
+              <strong>{bundle.title}</strong>
+              <span>{bundle.description}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="card-actions">
           <Button onClick={saveProfile}>
             <Save size={16} />
@@ -308,6 +413,12 @@ export function VoicesPage() {
               <div>
                 <span className="step-chip">{getAudioEventLabel(phrase.eventType)}</span>
                 <h3>{phrase.label}</h3>
+                <div className="voice-cue-row">
+                  <span className="voice-cue">{getVoiceCueLabel(phrase.eventType)}</span>
+                  {draft.phrases.filter((item) => item.eventType === phrase.eventType).length > 1 ? (
+                    <span className="voice-cue">Aleatorio</span>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -446,6 +557,47 @@ const suggestedEventTypes: AudioEventType[] = [
   'PROTOCOL_END',
   'PROTOCOL_CANCELLED',
 ]
+
+function getVoiceCueLabel(eventType: AudioEventType) {
+  if (
+    eventType === 'PROTOCOL_PRE_START' ||
+    eventType === 'PROTOCOL_START' ||
+    eventType === 'STEP_START' ||
+    eventType === 'REST_START' ||
+    eventType === 'ROUND_START' ||
+    eventType === 'LAST_ROUND_START'
+  ) {
+    return 'No inicio'
+  }
+
+  if (
+    eventType === 'STEP_END' ||
+    eventType === 'PROTOCOL_END' ||
+    eventType === 'PROTOCOL_CANCELLED'
+  ) {
+    return 'No fim'
+  }
+
+  if (
+    eventType === 'STEP_WARNING_30' ||
+    eventType === 'STEP_WARNING_20' ||
+    eventType === 'STEP_WARNING_10' ||
+    eventType === 'STEP_WARNING_5' ||
+    eventType === 'REST_WARNING'
+  ) {
+    return 'Em X segundos'
+  }
+
+  if (
+    eventType === 'STEP_COUNTDOWN_3' ||
+    eventType === 'STEP_COUNTDOWN_2' ||
+    eventType === 'STEP_COUNTDOWN_1'
+  ) {
+    return 'Contagem final'
+  }
+
+  return 'Troca de etapa'
+}
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {

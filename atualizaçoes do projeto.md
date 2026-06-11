@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.06`
+`V1.00.07`
 
 ## Historico
+
+### V1.00.07 - 2026-06-11
+
+- Biblioteca de vozes ampliada com pacotes prontos por categoria como aquecimento, pressao, descanso e encerramento.
+- Indicadores visuais para cada frase mostrando se entra no inicio, no fim, em X segundos ou em modo aleatorio.
+- Fluxo de montagem de voz mais rapido para criar perfis completos direto no app instalado.
 
 ### V1.00.06 - 2026-06-11
 
