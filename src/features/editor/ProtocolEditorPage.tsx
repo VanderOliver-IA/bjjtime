@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { DurationInput } from '../../components/ui/DurationInput'
 import { useAppStore } from '../../state/useAppStore'
 import type { Protocol, Step } from '../../types/domain'
 import { formatDurationLabel, getStepTypeLabel } from '../../utils/format'
@@ -304,7 +305,7 @@ function ProtocolEditorForm({
               <div>
                 <div className="chip-row">
                   <span className="step-chip">{getStepTypeLabel(step.type)}</span>
-                  <span className="step-chip">{step.durationSeconds}s</span>
+                  <span className="step-chip">{formatDurationLabel(step.durationSeconds)}</span>
                 </div>
                 <h3>{step.name}</h3>
               </div>
@@ -376,14 +377,13 @@ function ProtocolEditorForm({
               </label>
 
               <label className="field">
-                <span>Duracao em segundos</span>
-                <input
-                  min={1}
-                  type="number"
-                  value={step.durationSeconds}
-                  onChange={(event) =>
+                <span>Duracao</span>
+                <DurationInput
+                  minSeconds={1}
+                  valueSeconds={step.durationSeconds}
+                  onChangeSeconds={(durationSeconds) =>
                     updateStep(step.id, {
-                      durationSeconds: Math.max(1, Number(event.target.value)),
+                      durationSeconds,
                     })
                   }
                 />

@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.02`
+`V1.00.03`
 
 ## Historico
+
+### V1.00.03 - 2026-06-11
+
+- Campos de tempo com seletor de unidade entre minutos e segundos no criador rapido e editor de protocolos.
+- Personalizacao visual do app para JH - Centro de Treinamento de Jiu-Jitsu com a logo oficial.
+- Tema dark definido como padrao com paleta inspirada na identidade da marca.
 
 ### V1.00.02 - 2026-06-11
 

@@ -1,12 +1,7 @@
-import {
-  Dumbbell,
-  FolderClock,
-  History,
-  LayoutTemplate,
-  Settings,
-} from 'lucide-react'
+import { FolderClock, History, LayoutTemplate, Settings } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { APP_VERSION } from '../../app/meta'
+import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 const navigationItems = [
   { to: '/', label: 'Biblioteca', icon: FolderClock },
@@ -21,12 +16,13 @@ export function ShellLayout() {
       <header className="shell__header">
         <div className="brand-lockup">
           <div className="brand-mark">
-            <Dumbbell size={20} strokeWidth={2.3} />
+            <img src={jhLogo} alt="Logo JH Centro de Treinamento de Jiu-Jitsu" />
           </div>
           <div>
-            <p className="eyebrow">BJJ Timer</p>
-            <h1 className="shell__title">Treino no ritmo do tatame</h1>
-            <p className="version-pill">{APP_VERSION}</p>
+            <p className="eyebrow">JH BJJ</p>
+            <h1 className="shell__title">Centro de Treinamento de Jiu-Jitsu</h1>
+            <p className="brand-subtitle">Timer oficial de treino</p>
+            <p className="version-pill">BJJ Timer {APP_VERSION}</p>
           </div>
         </div>
       </header>

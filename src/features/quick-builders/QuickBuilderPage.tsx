@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { DurationInput } from '../../components/ui/DurationInput'
 import { useAppStore } from '../../state/useAppStore'
 import type { Protocol } from '../../types/domain'
 import { formatDurationLabel } from '../../utils/format'
@@ -72,7 +73,7 @@ export function QuickBuilderPage() {
         <div className="page-header">
           <div>
             <p className="eyebrow">{isDrillMode ? 'Drill rapido' : 'Rola rapido'}</p>
-            <h2>{isDrillMode ? 'Monte blocos repetidos' : 'Gere rounds em segundos'}</h2>
+            <h2>{isDrillMode ? 'Monte blocos repetidos' : 'Gere rounds sob medida'}</h2>
             <p>
               Preencha poucos campos, revise a sequencia e transforme isso em um protocolo
               reutilizavel.
@@ -92,21 +93,15 @@ export function QuickBuilderPage() {
             <>
               <label className="field">
                 <span>Tempo de acao</span>
-                <input
-                  min={1}
-                  type="number"
-                  value={actionSeconds}
-                  onChange={(event) => setActionSeconds(Math.max(1, Number(event.target.value)))}
+                <DurationInput
+                  minSeconds={1}
+                  valueSeconds={actionSeconds}
+                  onChangeSeconds={setActionSeconds}
                 />
               </label>
               <label className="field">
                 <span>Tempo de pausa</span>
-                <input
-                  min={0}
-                  type="number"
-                  value={pauseSeconds}
-                  onChange={(event) => setPauseSeconds(Math.max(0, Number(event.target.value)))}
-                />
+                <DurationInput valueSeconds={pauseSeconds} onChangeSeconds={setPauseSeconds} />
               </label>
               <label className="field">
                 <span>Repeticoes</span>
@@ -122,21 +117,15 @@ export function QuickBuilderPage() {
             <>
               <label className="field">
                 <span>Tempo por round</span>
-                <input
-                  min={30}
-                  type="number"
-                  value={roundSeconds}
-                  onChange={(event) => setRoundSeconds(Math.max(30, Number(event.target.value)))}
+                <DurationInput
+                  minSeconds={30}
+                  valueSeconds={roundSeconds}
+                  onChangeSeconds={setRoundSeconds}
                 />
               </label>
               <label className="field">
                 <span>Descanso entre rounds</span>
-                <input
-                  min={0}
-                  type="number"
-                  value={pauseSeconds}
-                  onChange={(event) => setPauseSeconds(Math.max(0, Number(event.target.value)))}
-                />
+                <DurationInput valueSeconds={pauseSeconds} onChangeSeconds={setPauseSeconds} />
               </label>
               <label className="field">
                 <span>Quantidade de rounds</span>
@@ -169,7 +158,7 @@ export function QuickBuilderPage() {
             <div key={step.id} className="step-card">
               <div className="step-card__title">
                 <h3>{step.name}</h3>
-                <span className="step-chip">{step.durationSeconds}s</span>
+                <span className="step-chip">{formatDurationLabel(step.durationSeconds)}</span>
               </div>
             </div>
           ))}

@@ -29,9 +29,9 @@ export function AppProviders({ children }: PropsWithChildren) {
       <div className="app-loading-shell">
         <div className="pulse-ring" />
         <div>
-          <p className="eyebrow">BJJ Timer</p>
+          <p className="eyebrow">JH BJJ</p>
           <h1>Carregando o tatame</h1>
-          <p>Preparando protocolos, audio e configuracoes locais.</p>
+          <p>Preparando protocolos, audio e configuracoes locais do centro de treinamento.</p>
         </div>
       </div>
     )
