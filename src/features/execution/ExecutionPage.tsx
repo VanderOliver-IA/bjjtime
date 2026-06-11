@@ -7,6 +7,7 @@ import {
   Square,
   Volume2,
 } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
@@ -86,9 +87,7 @@ function ExecutionRunner({
     protocol.steps[0]?.durationSeconds ? protocol.steps[0].durationSeconds * 1000 : 0,
   )
   const [finishedMessage, setFinishedMessage] = useState('Treino finalizado.')
-  const [sessionStartedAt, setSessionStartedAt] = useState(() =>
-    new Date().toISOString(),
-  )
+  const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
   const lastTickRef = useRef<number | null>(null)
   const spokenKeysRef = useRef<Set<string>>(new Set())
   const historyWrittenRef = useRef(false)
@@ -114,6 +113,9 @@ function ExecutionRunner({
             (currentStep.durationSeconds * 1000)) *
             100,
         )
+  const ringStyle = {
+    '--progress': `${status === 'preparing' ? 0 : stepProgress}`,
+  } as CSSProperties & { '--progress': string }
 
   const playProtocolEvent = useCallback(
     (
@@ -134,6 +136,8 @@ function ExecutionRunner({
         soundType: event.soundType,
         volume: settings.defaultVolume,
         vibrate: step.vibrationEnabled,
+        customAudioDataUrl: event.customAudioDataUrl,
+        voicePreset: protocol.voicePack,
       })
     },
     [protocol, settings.defaultVolume],
@@ -210,11 +214,6 @@ function ExecutionRunner({
   const advanceToNextStep = useCallback(() => {
     const nextStepIndex = currentStepIndex + 1
 
-    playProtocolEvent('STEP_TRANSITION', currentStep, {
-      etapa_atual: currentStep.name,
-      proxima_etapa: protocol.steps[nextStepIndex]?.name ?? 'Final do treino',
-    })
-
     if (nextStepIndex >= protocol.steps.length) {
       setFinishedMessage('Boa. Treino finalizado.')
       setStatus('finished')
@@ -223,19 +222,24 @@ function ExecutionRunner({
       return
     }
 
+    playProtocolEvent('STEP_TRANSITION', currentStep, {
+      etapa_atual: currentStep.name,
+      proxima_etapa: protocol.steps[nextStepIndex]?.name ?? 'Final do treino',
+    })
+
     window.setTimeout(() => startStep(nextStepIndex), 160)
   }, [currentStep, currentStepIndex, playProtocolEvent, protocol.steps, startStep, writeHistory])
 
   useEffect(() => {
+    const preStartEvent = protocol.audioEvents.find((event) => event.eventType === 'PROTOCOL_PRE_START')
     const preStartMessage = resolveAudioMessage(protocol, 'PROTOCOL_PRE_START', {})
-    const preStartSound =
-      protocol.audioEvents.find((event) => event.eventType === 'PROTOCOL_PRE_START')
-        ?.soundType ?? 'none'
 
     audioService.play({
       message: preStartMessage,
-      soundType: preStartSound,
+      soundType: preStartEvent?.soundType ?? 'none',
       volume: settings.defaultVolume,
+      customAudioDataUrl: preStartEvent?.customAudioDataUrl,
+      voicePreset: protocol.voicePack,
     })
 
     const intervalId = window.setInterval(() => {
@@ -305,6 +309,14 @@ function ExecutionRunner({
 
         window.clearInterval(intervalId)
 
+        playProtocolEvent('STEP_END', currentStep, {
+          etapa_atual: currentStep.name,
+          proxima_etapa: protocol.steps[currentStepIndex + 1]?.name ?? 'Final do treino',
+          tempo_restante: 0,
+          round_atual: currentStepIndex + 1,
+          total_rounds: protocol.steps.length,
+        })
+
         if (!currentStep.autoNext) {
           setStatus('paused')
           return 0
@@ -316,7 +328,15 @@ function ExecutionRunner({
     }, 250)
 
     return () => window.clearInterval(intervalId)
-  }, [advanceToNextStep, currentStep.autoNext, status])
+  }, [
+    advanceToNextStep,
+    currentStep,
+    currentStep.autoNext,
+    currentStepIndex,
+    playProtocolEvent,
+    protocol.steps,
+    status,
+  ])
 
   useEffect(() => {
     if (status !== 'running') {
@@ -332,6 +352,7 @@ function ExecutionRunner({
           ? 'REST_WARNING'
           : 'STEP_WARNING_10',
       ],
+      [5, 'STEP_WARNING_5'],
       [3, 'STEP_COUNTDOWN_3'],
       [2, 'STEP_COUNTDOWN_2'],
       [1, 'STEP_COUNTDOWN_1'],
@@ -392,15 +413,16 @@ function ExecutionRunner({
   return (
     <div className="execution-screen">
       <div className="execution-shell">
-        <header className="execution-card execution-stage">
+        <header className="execution-card execution-stage execution-stage--top">
           <div>
             <p className="eyebrow">Modo tatame</p>
             <h1 className="execution-step-name">{protocol.name}</h1>
-            <p className="muted" style={{ color: 'rgba(239, 246, 255, 0.72)' }}>
+            <p className="muted execution-next-step">
               Proxima etapa: {protocol.steps[currentStepIndex + 1]?.name ?? 'Final do protocolo'}
             </p>
           </div>
           <Button variant="ghost" onClick={() => navigateTo('/')}>
+            <ArrowLeft size={16} />
             Voltar
           </Button>
         </header>
@@ -434,63 +456,52 @@ function ExecutionRunner({
                         ? 'Pausado'
                         : currentStep.type === 'pause' || currentStep.type === 'rest'
                           ? 'Pausa'
-                          : 'Em execucao'}
+                          : 'Valendo'}
                   </p>
                   <h2 className="execution-step-name">{currentStep.name}</h2>
                 </div>
                 <div className="chip-row">
-                  <span className="chip" style={{ background: 'rgba(15, 23, 42, 0.38)', color: '#fff' }}>
+                  <span className="chip execution-chip">
                     <Volume2 size={14} />
                     {protocol.audioEnabled ? 'Audio ativo' : 'Sem audio'}
                   </span>
                 </div>
               </div>
 
-              <div className="execution-clock">
-                {status === 'preparing' ? prepCount : formatClock(Math.ceil(remainingMs / 1000))}
+              <div className="execution-ring" style={ringStyle}>
+                <div className="execution-ring__inner">
+                  <p className="execution-ring__label">
+                    {status === 'preparing' ? 'Comecando em' : 'Tempo restante'}
+                  </p>
+                  <div className="execution-clock">
+                    {status === 'preparing' ? prepCount : formatClock(Math.ceil(remainingMs / 1000))}
+                  </div>
+                  <p className="execution-ring__cta">
+                    {status === 'paused'
+                      ? 'Toque em continuar para retomar'
+                      : `Etapa de ${formatDurationLabel(currentStep.durationSeconds)}`}
+                  </p>
+                </div>
               </div>
 
               <div className="execution-meta-grid">
-                <div>
-                  <p className="muted" style={{ color: 'rgba(239, 246, 255, 0.62)' }}>
-                    Tempo do protocolo
-                  </p>
-                  <strong>{formatClock(Math.max(0, totalProtocolSeconds - elapsedProtocolSeconds))}</strong>
-                </div>
-                <div>
-                  <p className="muted" style={{ color: 'rgba(239, 246, 255, 0.62)' }}>
-                    Etapas restantes
-                  </p>
-                  <strong>{protocol.steps.length - currentStepIndex}</strong>
-                </div>
-              </div>
-
-              <div>
-                <div className="execution-stage">
-                  <span>Progresso da etapa</span>
+                <div className="protocol-stat">
+                  <span className="protocol-stat__label">Etapa</span>
                   <strong>{Math.round(stepProgress)}%</strong>
                 </div>
-                <div className="progress-track">
-                  <div className="progress-bar" style={{ width: `${stepProgress}%` }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="execution-stage">
-                  <span>Progresso do protocolo</span>
+                <div className="protocol-stat">
+                  <span className="protocol-stat__label">Treino</span>
                   <strong>{Math.round(protocolProgress)}%</strong>
                 </div>
-                <div className="progress-track">
-                  <div
-                    className="progress-bar progress-bar--secondary"
-                    style={{ width: `${protocolProgress}%` }}
-                  />
+                <div className="protocol-stat">
+                  <span className="protocol-stat__label">Restante</span>
+                  <strong>{formatClock(Math.max(0, totalProtocolSeconds - elapsedProtocolSeconds))}</strong>
                 </div>
               </div>
             </section>
 
             <section className="execution-card">
-              <div className="execution-controls">
+              <div className="execution-controls execution-controls--round">
                 <Button variant="secondary" onClick={pauseOrResume}>
                   {status === 'paused' ? <Play size={18} /> : <Pause size={18} />}
                   {status === 'paused' ? 'Continuar' : 'Pausar'}
@@ -501,7 +512,7 @@ function ExecutionRunner({
                 </Button>
                 <Button variant="ghost" onClick={advanceToNextStep}>
                   <ArrowRight size={16} />
-                  Avancar
+                  Proxima
                 </Button>
                 <Button variant="ghost" onClick={restartProtocol}>
                   <RotateCcw size={16} />

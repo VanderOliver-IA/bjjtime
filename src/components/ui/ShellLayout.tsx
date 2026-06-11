@@ -1,6 +1,8 @@
 import { FolderClock, History, LayoutTemplate, Settings } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useMemo } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { APP_VERSION } from '../../app/meta'
+import { useAppStore } from '../../state/useAppStore'
 import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 const navigationItems = [
@@ -11,6 +13,20 @@ const navigationItems = [
 ]
 
 export function ShellLayout() {
+  const navigate = useNavigate()
+  const protocols = useAppStore((state) => state.protocols)
+  const quickLaunchProtocol = useMemo(() => {
+    const ordered = [...protocols].sort((left, right) => {
+      if (left.isFavorite !== right.isFavorite) {
+        return left.isFavorite ? -1 : 1
+      }
+
+      return right.updatedAt.localeCompare(left.updatedAt)
+    })
+
+    return ordered[0] ?? null
+  }, [protocols])
+
   return (
     <div className="shell">
       <header className="shell__header">
@@ -32,7 +48,37 @@ export function ShellLayout() {
       </main>
 
       <nav className="bottom-nav" aria-label="Navegacao principal">
-        {navigationItems.map(({ to, label, icon: Icon }) => (
+        {navigationItems.slice(0, 2).map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              ['bottom-nav__item', isActive ? 'bottom-nav__item--active' : '']
+                .filter(Boolean)
+                .join(' ')
+            }
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+
+        <button
+          className="bottom-nav__cta"
+          onClick={() => {
+            if (quickLaunchProtocol) {
+              navigate(`/protocol/${quickLaunchProtocol.id}/run`)
+              return
+            }
+
+            navigate('/templates')
+          }}
+        >
+          <span>VAI!</span>
+          <small>{quickLaunchProtocol ? 'Iniciar agora' : 'Escolher modelo'}</small>
+        </button>
+
+        {navigationItems.slice(2).map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}

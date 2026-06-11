@@ -1,12 +1,32 @@
 import { SlidersHorizontal, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
 
 export function SettingsPage() {
   const settings = useAppStore((state) => state.settings)
   const updateSettings = useAppStore((state) => state.updateSettings)
   const clearHistory = useAppStore((state) => state.clearHistory)
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      return
+    }
+
+    function syncVoices() {
+      setAvailableVoices(audioService.getAvailableVoices())
+    }
+
+    syncVoices()
+    window.speechSynthesis.onvoiceschanged = syncVoices
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null
+    }
+  }, [])
 
   return (
     <>
@@ -56,7 +76,17 @@ export function SettingsPage() {
               <option value="coach">Professor motivador</option>
               <option value="neutral">Professor neutro</option>
               <option value="competition">Competicao</option>
+              {availableVoices.length > 0 ? <option disabled>──────────</option> : null}
+              {availableVoices.map((voice) => (
+                <option key={voice.voiceURI} value={`voice:${voice.name}`}>
+                  Voz do dispositivo: {voice.name}
+                </option>
+              ))}
             </select>
+            <small>
+              Para frases personalizadas e audios enviados, use o gerenciador de vozes dentro de
+              cada protocolo.
+            </small>
           </label>
 
           <label className="field">

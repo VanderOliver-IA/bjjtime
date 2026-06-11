@@ -1,5 +1,5 @@
-import { PlayCircle, Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { PlayCircle, Save, Trash2, Upload } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -12,13 +12,17 @@ const editableEvents = [
   'PROTOCOL_START',
   'STEP_START',
   'STEP_WARNING_10',
+  'STEP_WARNING_5',
   'STEP_COUNTDOWN_3',
   'STEP_COUNTDOWN_2',
   'STEP_COUNTDOWN_1',
+  'STEP_END',
   'STEP_TRANSITION',
   'REST_START',
+  'REST_WARNING',
   'LAST_ROUND_START',
   'PROTOCOL_END',
+  'PROTOCOL_CANCELLED',
 ] as const
 
 export function ProtocolAudioPage() {
@@ -63,19 +67,37 @@ function ProtocolAudioForm({
 }: ProtocolAudioFormProps) {
   const saveAudioEvents = useAppStore((state) => state.saveAudioEvents)
   const [events, setEvents] = useState<AudioEventSetting[]>(protocol.audioEvents)
-  const [voicePack, setVoicePack] = useState<Protocol['voicePack']>(protocol.voicePack)
+  const [voicePack, setVoicePack] = useState(protocol.voicePack)
   const [soundProfile, setSoundProfile] = useState<Protocol['soundProfile']>(protocol.soundProfile)
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      return
+    }
+
+    function syncVoices() {
+      setAvailableVoices(audioService.getAvailableVoices())
+    }
+
+    syncVoices()
+    window.speechSynthesis.onvoiceschanged = syncVoices
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null
+    }
+  }, [])
 
   return (
     <>
       <Card>
         <div className="page-header">
           <div>
-            <p className="eyebrow">Audio e falas</p>
+            <p className="eyebrow">Vozes e palavras</p>
             <h2>{protocol.name}</h2>
             <p>
-              Ajuste as frases curtas do tatame. Prioridade aqui e clareza, ritmo e pouca
-              sobreposicao.
+              Escolha a voz, ajuste as frases de mecanica do treino e envie audios reais para
+              sobrescrever cada chamada importante.
             </p>
           </div>
         </div>
@@ -84,14 +106,20 @@ function ProtocolAudioForm({
       <Card>
         <div className="field-grid">
           <label className="field">
-            <span>Pacote de voz</span>
+            <span>Estilo de voz</span>
             <select
               value={voicePack}
-              onChange={(event) => setVoicePack(event.target.value as Protocol['voicePack'])}
+              onChange={(event) => setVoicePack(event.target.value)}
             >
               <option value="coach">Professor motivador</option>
               <option value="neutral">Professor neutro</option>
               <option value="competition">Competicao</option>
+              {availableVoices.length > 0 ? <option disabled>──────────</option> : null}
+              {availableVoices.map((voice) => (
+                <option key={voice.voiceURI} value={`voice:${voice.name}`}>
+                  Voz do dispositivo: {voice.name}
+                </option>
+              ))}
             </select>
           </label>
           <label className="field">
@@ -108,6 +136,10 @@ function ProtocolAudioForm({
             </select>
           </label>
         </div>
+        <p className="muted">
+          Se voce enviar um audio em um evento abaixo, ele substitui a fala sintetizada daquele
+          momento especifico.
+        </p>
       </Card>
 
       <section className="audio-events-grid">
@@ -136,6 +168,68 @@ function ProtocolAudioForm({
                     )
                   }
                 />
+              </label>
+
+              <label className="field">
+                <span>Audio enviado</span>
+                <div className="audio-upload-row">
+                  <label className="button button--ghost button--md audio-upload-button">
+                    <Upload size={16} />
+                    Enviar voz
+                    <input
+                      accept="audio/*"
+                      className="sr-only"
+                      type="file"
+                      onChange={async (event) => {
+                        const file = event.target.files?.[0]
+
+                        if (!file) {
+                          return
+                        }
+
+                        const customAudioDataUrl = await readFileAsDataUrl(file)
+
+                        setEvents((currentEvents) =>
+                          currentEvents.map((item) =>
+                            item.id === audioEvent.id
+                              ? {
+                                  ...item,
+                                  customAudioDataUrl,
+                                  customAudioName: file.name,
+                                }
+                              : item,
+                          ),
+                        )
+                      }}
+                    />
+                  </label>
+                  {audioEvent.customAudioDataUrl ? (
+                    <Button
+                      variant="danger"
+                      onClick={() =>
+                        setEvents((currentEvents) =>
+                          currentEvents.map((item) =>
+                            item.id === audioEvent.id
+                              ? {
+                                  ...item,
+                                  customAudioDataUrl: null,
+                                  customAudioName: null,
+                                }
+                              : item,
+                          ),
+                        )
+                      }
+                    >
+                      <Trash2 size={16} />
+                      Remover audio
+                    </Button>
+                  ) : null}
+                </div>
+                <small>
+                  {audioEvent.customAudioName
+                    ? `Arquivo atual: ${audioEvent.customAudioName}`
+                    : 'Nenhum audio enviado. A frase sintetizada sera usada.'}
+                </small>
               </label>
 
               <div className="settings-grid">
@@ -190,6 +284,8 @@ function ProtocolAudioForm({
                       message: audioEvent.messageText,
                       soundType: audioEvent.soundType,
                       volume: defaultVolume,
+                      customAudioDataUrl: audioEvent.customAudioDataUrl,
+                      voicePreset: voicePack,
                     })
                   }
                 >
@@ -219,6 +315,24 @@ function ProtocolAudioForm({
       </Card>
     </>
   )
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+
+      reject(new Error('Falha ao carregar audio.'))
+    }
+
+    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar audio.'))
+    reader.readAsDataURL(file)
+  })
 }
 
 function eventLabel(eventType: AudioEventSetting['eventType']) {

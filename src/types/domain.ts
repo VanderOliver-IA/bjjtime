@@ -50,6 +50,8 @@ export interface AudioEventSetting {
   enabled: boolean
   soundType: 'beep' | 'gong' | 'whistle' | 'bell' | 'none'
   triggerSecondsBeforeEnd?: number
+  customAudioDataUrl?: string | null
+  customAudioName?: string | null
 }
 
 export interface Step {
@@ -79,7 +81,7 @@ export interface Protocol {
   vibrationEnabled: boolean
   countdownEnabled: boolean
   keepScreenOn: boolean
-  voicePack: 'coach' | 'neutral' | 'competition'
+  voicePack: string
   soundProfile: 'arena' | 'clean' | 'minimal'
   builtInSourceId?: string
   createdAt: string
@@ -101,7 +103,7 @@ export interface ExecutionHistory {
 }
 
 export interface AppSettings {
-  defaultVoice: Protocol['voicePack']
+  defaultVoice: string
   defaultVolume: number
   defaultBeep: AudioEventSetting['soundType']
   vibrationEnabled: boolean

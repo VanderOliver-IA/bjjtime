@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.03`
+`V1.00.04`
 
 ## Historico
+
+### V1.00.04 - 2026-06-11
+
+- Botao central `VAI!` no menu inferior com acesso direto ao cronometro priorizando o protocolo favorito ou mais recente.
+- Nova tela de execucao com circulo de tempo em destaque e controles diretos abaixo para uso rapido no tatame.
+- Gestao de vozes e palavras ampliada com selecao de vozes do dispositivo, envio de audios reais por evento e controle de falas sem sobreposicao.
 
 ### V1.00.03 - 2026-06-11
 

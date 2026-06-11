@@ -3,9 +3,12 @@ interface PlayAudioOptions {
   volume?: number
   soundType?: 'beep' | 'gong' | 'whistle' | 'bell' | 'none'
   vibrate?: boolean
+  customAudioDataUrl?: string | null
+  voicePreset?: string
 }
 
 let audioContext: AudioContext | null = null
+let activeCustomAudio: HTMLAudioElement | null = null
 
 function getAudioContext() {
   if (!audioContext) {
@@ -48,27 +51,105 @@ function playTone(soundType: NonNullable<PlayAudioOptions['soundType']>, volume:
   oscillator.stop(now + profile.duration)
 }
 
-function speak(message: string, volume: number) {
+function getSpeechVoices() {
+  if (!('speechSynthesis' in window)) {
+    return []
+  }
+
+  return window.speechSynthesis.getVoices()
+}
+
+function applyVoicePreset(utterance: SpeechSynthesisUtterance, voicePreset?: string) {
+  if (!voicePreset) {
+    return
+  }
+
+  if (voicePreset.startsWith('voice:')) {
+    const voiceName = voicePreset.replace('voice:', '')
+    const matchingVoice = getSpeechVoices().find((voice) => voice.name === voiceName)
+
+    if (matchingVoice) {
+      utterance.voice = matchingVoice
+      utterance.lang = matchingVoice.lang
+    }
+
+    return
+  }
+
+  if (voicePreset === 'coach') {
+    utterance.rate = 1.02
+    utterance.pitch = 1.03
+    return
+  }
+
+  if (voicePreset === 'competition') {
+    utterance.rate = 1.08
+    utterance.pitch = 0.94
+    return
+  }
+}
+
+function speak(message: string, volume: number, voicePreset?: string) {
   if (!('speechSynthesis' in window)) {
     return
   }
 
   const utterance = new SpeechSynthesisUtterance(message)
   utterance.lang = 'pt-BR'
+  utterance.volume = volume
   utterance.rate = 1
   utterance.pitch = 1
-  utterance.volume = volume
+  applyVoicePreset(utterance, voicePreset)
   window.speechSynthesis.speak(utterance)
 }
 
+function playCustomAudio(customAudioDataUrl: string, volume: number) {
+  stopPlayback()
+
+  const audio = new Audio(customAudioDataUrl)
+  audio.volume = volume
+  activeCustomAudio = audio
+  audio.onended = () => {
+    if (activeCustomAudio === audio) {
+      activeCustomAudio = null
+    }
+  }
+  void audio.play()
+}
+
+function stopPlayback() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
+
+  if (activeCustomAudio) {
+    activeCustomAudio.pause()
+    activeCustomAudio.currentTime = 0
+    activeCustomAudio = null
+  }
+}
+
 export const audioService = {
-  play({ message, volume = 0.9, soundType = 'none', vibrate = false }: PlayAudioOptions) {
+  getAvailableVoices() {
+    return getSpeechVoices()
+  },
+  play({
+    message,
+    volume = 0.9,
+    soundType = 'none',
+    vibrate = false,
+    customAudioDataUrl,
+    voicePreset,
+  }: PlayAudioOptions) {
     if (soundType !== 'none') {
       playTone(soundType, volume)
     }
 
-    if (message) {
-      speak(message, volume)
+    if (customAudioDataUrl) {
+      playCustomAudio(customAudioDataUrl, volume)
+    } else if (message) {
+      stopPlayback()
+      speak(message, volume, voicePreset)
     }
 
     if (vibrate && 'vibrate' in navigator) {
@@ -76,8 +157,6 @@ export const audioService = {
     }
   },
   stop() {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel()
-    }
+    stopPlayback()
   },
 }
