@@ -6,6 +6,8 @@ import type {
   ProtocolCategory,
   Step,
   StepType,
+  VoicePhrase,
+  VoiceProfile,
 } from '../types/domain'
 
 export const categoryOptions: Array<{
@@ -78,13 +80,17 @@ export function createDefaultAudioEvents(): AudioEventSetting[] {
     baseEvent('PROTOCOL_END', 'Boa. Treino finalizado.', 'gong'),
     baseEvent('PROTOCOL_CANCELLED', 'Treino encerrado.', 'bell'),
     baseEvent('STEP_START', 'Valendo!', 'bell'),
+    baseEvent('STEP_WARNING_30', 'Faltam so 30 segundos!', 'whistle', false, 30),
+    baseEvent('STEP_WARNING_20', 'Faltam so 20 segundos!', 'whistle', false, 20),
     baseEvent('STEP_WARNING_10', 'So mais 10!', 'whistle', true, 10),
     baseEvent('STEP_WARNING_5', 'Ultimos 5!', 'beep', true, 5),
     baseEvent('STEP_COUNTDOWN_3', '3', 'beep', true, 3),
     baseEvent('STEP_COUNTDOWN_2', '2', 'beep', true, 2),
     baseEvent('STEP_COUNTDOWN_1', '1', 'beep', true, 1),
+    baseEvent('STEP_END', 'Acabou!', 'gong'),
     baseEvent('STEP_TRANSITION', 'Troca!', 'gong'),
     baseEvent('REST_START', 'Descanso.', 'bell'),
+    baseEvent('REST_WARNING', 'Faltam so 10 segundos de descanso!', 'beep', false, 10),
     baseEvent('ROUND_START', 'Round valendo!', 'gong'),
     baseEvent('LAST_ROUND_START', 'Ultimo round!', 'whistle'),
   ]
@@ -95,7 +101,7 @@ export function createStep(
   settings?: AppSettings,
 ): Step {
   return {
-    id: createId(),
+    id: partial?.id ?? createId(),
     name: partial?.name ?? 'Nova etapa',
     type: partial?.type ?? 'action',
     durationSeconds: partial?.durationSeconds ?? 30,
@@ -142,6 +148,38 @@ export function createBlankProtocol(settings = createDefaultSettings()): Protoco
       ),
     ],
     audioEvents: createDefaultAudioEvents(),
+  }
+}
+
+export function createVoicePhrase(
+  partial?: Partial<VoicePhrase>,
+): VoicePhrase {
+  const now = new Date().toISOString()
+
+  return {
+    id: createId(),
+    eventType: partial?.eventType ?? 'STEP_START',
+    label: partial?.label ?? 'Nova frase',
+    messageText: partial?.messageText ?? 'Valendo!',
+    audioDataUrl: partial?.audioDataUrl ?? null,
+    audioName: partial?.audioName ?? null,
+    createdAt: partial?.createdAt ?? now,
+    updatedAt: partial?.updatedAt ?? now,
+  }
+}
+
+export function createVoiceProfile(
+  partial?: Partial<VoiceProfile>,
+): VoiceProfile {
+  const now = new Date().toISOString()
+
+  return {
+    id: partial?.id ?? createId(),
+    name: partial?.name ?? 'Nova voz',
+    description: partial?.description ?? '',
+    createdAt: partial?.createdAt ?? now,
+    updatedAt: partial?.updatedAt ?? now,
+    phrases: partial?.phrases?.map((phrase) => createVoicePhrase(phrase)) ?? [],
   }
 }
 
@@ -300,4 +338,38 @@ export function resolveAudioMessage(
   return Object.entries(replacements).reduce((message, [token, value]) => {
     return message.replaceAll(`{${token}}`, String(value))
   }, event.messageText)
+}
+
+export function resolveVoiceProfileId(voicePack: string) {
+  if (!voicePack.startsWith('profile:')) {
+    return null
+  }
+
+  return voicePack.replace('profile:', '')
+}
+
+export function pickVoiceProfilePhrase(
+  voiceProfiles: VoiceProfile[],
+  voicePack: string,
+  eventType: AudioEventType,
+) {
+  const profileId = resolveVoiceProfileId(voicePack)
+
+  if (!profileId) {
+    return null
+  }
+
+  const profile = voiceProfiles.find((item) => item.id === profileId)
+
+  if (!profile) {
+    return null
+  }
+
+  const matchingPhrases = profile.phrases.filter((phrase) => phrase.eventType === eventType)
+
+  if (matchingPhrases.length === 0) {
+    return null
+  }
+
+  return matchingPhrases[Math.floor(Math.random() * matchingPhrases.length)] ?? null
 }

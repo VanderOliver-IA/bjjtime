@@ -1,17 +1,21 @@
-import { SlidersHorizontal, Trash2 } from 'lucide-react'
+import { Download, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { APK_DOWNLOAD_PATH, APK_VERSION } from '../../app/meta'
+import { useNavigate } from 'react-router-dom'
+import { APK_DOWNLOAD_URL, APK_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { useReleaseInfo } from '../../hooks/useReleaseInfo'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
 import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 export function SettingsPage() {
+  const navigate = useNavigate()
   const settings = useAppStore((state) => state.settings)
   const updateSettings = useAppStore((state) => state.updateSettings)
   const clearHistory = useAppStore((state) => state.clearHistory)
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const { hasUpdate, isChecking, isInstalledApp, releaseInfo, updateUrl } = useReleaseInfo()
 
   useEffect(() => {
     if (!('speechSynthesis' in window)) {
@@ -250,6 +254,22 @@ export function SettingsPage() {
       <Card>
         <div className="page-header">
           <div>
+            <p className="eyebrow">Menu de vozes</p>
+            <h2>Biblioteca separada para gravacao</h2>
+            <p>
+              Grave vozes como `Ludmila - Faixa Preta`, crie varias frases por gatilho e depois
+              selecione esse perfil dentro de cada protocolo.
+            </p>
+          </div>
+        </div>
+        <div className="card-actions">
+          <Button onClick={() => navigate('/voices')}>Abrir biblioteca de vozes</Button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="page-header">
+          <div>
             <p className="eyebrow">Instalacao Android</p>
             <h2>APK direto no telefone</h2>
             <p>
@@ -259,11 +279,36 @@ export function SettingsPage() {
           </div>
         </div>
         <div className="card-actions">
-          <a className="button button--primary button--md" href={APK_DOWNLOAD_PATH} download>
+          <a className="button button--primary button--md" href={APK_DOWNLOAD_URL}>
+            <Download size={16} />
             Instalar APK
           </a>
         </div>
       </Card>
+
+      {isInstalledApp && !isChecking ? (
+        <Card>
+          <div className="page-header">
+            <div>
+              <p className="eyebrow">Atualizacao automatica</p>
+              <h2>{hasUpdate ? 'Atualizacao encontrada' : 'Versao atualizada'}</h2>
+              <p>
+                {hasUpdate && releaseInfo
+                  ? `A release ${releaseInfo.appVersion} foi detectada no servidor. Toque para baixar e iniciar a atualizacao do aplicativo.`
+                  : 'Nenhuma versao mais nova foi encontrada agora.'}
+              </p>
+            </div>
+          </div>
+          {hasUpdate ? (
+            <div className="card-actions">
+              <Button onClick={() => window.location.assign(updateUrl)}>
+                <Download size={16} />
+                Atualizar app
+              </Button>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
 
       <Card>
         <div className="page-header">

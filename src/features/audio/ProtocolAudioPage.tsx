@@ -6,11 +6,15 @@ import { Card } from '../../components/ui/Card'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
 import type { AudioEventSetting, Protocol } from '../../types/domain'
+import { getAudioEventLabel } from '../../utils/format'
+import { pickVoiceProfilePhrase } from '../../utils/protocols'
 
 const editableEvents = [
   'PROTOCOL_PRE_START',
   'PROTOCOL_START',
   'STEP_START',
+  'STEP_WARNING_30',
+  'STEP_WARNING_20',
   'STEP_WARNING_10',
   'STEP_WARNING_5',
   'STEP_COUNTDOWN_3',
@@ -30,6 +34,7 @@ export function ProtocolAudioPage() {
   const { protocolId } = useParams()
   const protocols = useAppStore((state) => state.protocols)
   const settings = useAppStore((state) => state.settings)
+  const voiceProfiles = useAppStore((state) => state.voiceProfiles)
   const protocol = useMemo(
     () => protocols.find((item) => item.id === protocolId) ?? null,
     [protocolId, protocols],
@@ -50,6 +55,7 @@ export function ProtocolAudioPage() {
       navigateTo={navigate}
       protocol={protocol}
       defaultVolume={settings.defaultVolume}
+      voiceProfiles={voiceProfiles}
     />
   )
 }
@@ -58,12 +64,14 @@ interface ProtocolAudioFormProps {
   defaultVolume: number
   navigateTo: ReturnType<typeof useNavigate>
   protocol: Protocol
+  voiceProfiles: ReturnType<typeof useAppStore.getState>['voiceProfiles']
 }
 
 function ProtocolAudioForm({
   defaultVolume,
   navigateTo,
   protocol,
+  voiceProfiles,
 }: ProtocolAudioFormProps) {
   const saveAudioEvents = useAppStore((state) => state.saveAudioEvents)
   const [events, setEvents] = useState<AudioEventSetting[]>(protocol.audioEvents)
@@ -120,7 +128,16 @@ function ProtocolAudioForm({
                   Voz do dispositivo: {voice.name}
                 </option>
               ))}
+              {voiceProfiles.length > 0 ? <option disabled>──────────</option> : null}
+              {voiceProfiles.map((profile) => (
+                <option key={profile.id} value={`profile:${profile.id}`}>
+                  Biblioteca gravada: {profile.name}
+                </option>
+              ))}
             </select>
+            <small>
+              Para gravar varias frases com nome proprio, use o menu `Vozes`.
+            </small>
           </label>
           <label className="field">
             <span>Perfil sonoro</span>
@@ -140,6 +157,11 @@ function ProtocolAudioForm({
           Se voce enviar um audio em um evento abaixo, ele substitui a fala sintetizada daquele
           momento especifico.
         </p>
+        <div className="card-actions">
+          <Button variant="ghost" onClick={() => navigateTo('/voices')}>
+            Abrir biblioteca de vozes
+          </Button>
+        </div>
       </Card>
 
       <section className="audio-events-grid">
@@ -150,7 +172,7 @@ function ProtocolAudioForm({
               <div className="step-card__title">
                 <div>
                   <span className="step-chip">{audioEvent.eventType}</span>
-                  <h3>{eventLabel(audioEvent.eventType)}</h3>
+                  <h3>{getAudioEventLabel(audioEvent.eventType)}</h3>
                 </div>
               </div>
 
@@ -274,20 +296,51 @@ function ProtocolAudioForm({
                     <option value="none">Sem som</option>
                   </select>
                 </label>
+                {audioEvent.triggerSecondsBeforeEnd !== undefined ? (
+                  <label className="field">
+                    <span>Disparar em X segundos</span>
+                    <input
+                      min={1}
+                      type="number"
+                      value={audioEvent.triggerSecondsBeforeEnd}
+                      onChange={(event) =>
+                        setEvents((currentEvents) =>
+                          currentEvents.map((item) =>
+                            item.id === audioEvent.id
+                              ? {
+                                  ...item,
+                                  triggerSecondsBeforeEnd: Number(event.target.value),
+                                }
+                              : item,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                ) : null}
               </div>
 
               <div className="audio-row__footer">
                 <Button
                   variant="ghost"
-                  onClick={() =>
+                  onClick={() => {
+                    const profilePhrase = pickVoiceProfilePhrase(
+                      voiceProfiles,
+                      voicePack,
+                      audioEvent.eventType,
+                    )
+
                     audioService.play({
-                      message: audioEvent.messageText,
+                      message: profilePhrase?.messageText ?? audioEvent.messageText,
                       soundType: audioEvent.soundType,
                       volume: defaultVolume,
-                      customAudioDataUrl: audioEvent.customAudioDataUrl,
-                      voicePreset: voicePack,
+                      customAudioDataUrl:
+                        audioEvent.customAudioDataUrl ?? profilePhrase?.audioDataUrl ?? null,
+                      voicePreset: voicePack.startsWith('profile:')
+                        ? 'coach'
+                        : voicePack,
                     })
-                  }
+                  }}
                 >
                   <PlayCircle size={16} />
                   Testar evento
@@ -333,33 +386,4 @@ function readFileAsDataUrl(file: File) {
     reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar audio.'))
     reader.readAsDataURL(file)
   })
-}
-
-function eventLabel(eventType: AudioEventSetting['eventType']) {
-  const labels: Record<AudioEventSetting['eventType'], string> = {
-    PROTOCOL_PRE_START: 'Antes de iniciar',
-    PROTOCOL_START: 'Inicio do protocolo',
-    PROTOCOL_END: 'Fim do protocolo',
-    PROTOCOL_CANCELLED: 'Cancelamento',
-    STEP_START: 'Inicio da etapa',
-    STEP_HALF_TIME: 'Metade da etapa',
-    STEP_WARNING_30: 'Aviso 30 segundos',
-    STEP_WARNING_20: 'Aviso 20 segundos',
-    STEP_WARNING_10: 'Aviso 10 segundos',
-    STEP_WARNING_5: 'Aviso 5 segundos',
-    STEP_COUNTDOWN_3: 'Contagem 3',
-    STEP_COUNTDOWN_2: 'Contagem 2',
-    STEP_COUNTDOWN_1: 'Contagem 1',
-    STEP_END: 'Fim da etapa',
-    STEP_TRANSITION: 'Troca de etapa',
-    REST_START: 'Inicio da pausa',
-    REST_WARNING: 'Aviso da pausa',
-    REST_END: 'Fim da pausa',
-    ROUND_START: 'Inicio de round',
-    ROUND_WARNING: 'Aviso de round',
-    ROUND_END: 'Fim de round',
-    LAST_ROUND_START: 'Ultimo round',
-  }
-
-  return labels[eventType]
 }

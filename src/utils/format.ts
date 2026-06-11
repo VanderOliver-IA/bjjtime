@@ -1,4 +1,4 @@
-import type { ProtocolCategory, StepType } from '../types/domain'
+import type { AudioEventType, ProtocolCategory, StepType } from '../types/domain'
 
 const protocolCategoryLabels: Record<ProtocolCategory, string> = {
   warmup: 'Aquecimento',
@@ -21,6 +21,31 @@ const stepTypeLabels: Record<StepType, string> = {
   transition: 'Transicao',
   instruction: 'Instrucao',
   custom: 'Personalizado',
+}
+
+const audioEventLabels: Record<AudioEventType, string> = {
+  PROTOCOL_PRE_START: 'Antes de iniciar',
+  PROTOCOL_START: 'Inicio do protocolo',
+  PROTOCOL_END: 'Fim do protocolo',
+  PROTOCOL_CANCELLED: 'Cancelamento',
+  STEP_START: 'Inicio da etapa',
+  STEP_HALF_TIME: 'Metade da etapa',
+  STEP_WARNING_30: 'Aviso 30 segundos',
+  STEP_WARNING_20: 'Aviso 20 segundos',
+  STEP_WARNING_10: 'Aviso 10 segundos',
+  STEP_WARNING_5: 'Aviso 5 segundos',
+  STEP_COUNTDOWN_3: 'Contagem 3',
+  STEP_COUNTDOWN_2: 'Contagem 2',
+  STEP_COUNTDOWN_1: 'Contagem 1',
+  STEP_END: 'Fim da etapa',
+  STEP_TRANSITION: 'Troca de etapa',
+  REST_START: 'Inicio da pausa',
+  REST_WARNING: 'Aviso da pausa',
+  REST_END: 'Fim da pausa',
+  ROUND_START: 'Inicio de round',
+  ROUND_WARNING: 'Aviso de round',
+  ROUND_END: 'Fim de round',
+  LAST_ROUND_START: 'Ultimo round',
 }
 
 export function formatClock(totalSeconds: number) {
@@ -70,4 +95,27 @@ export function getCategoryLabel(category: ProtocolCategory) {
 
 export function getStepTypeLabel(stepType: StepType) {
   return stepTypeLabels[stepType]
+}
+
+export function getAudioEventLabel(eventType: AudioEventType) {
+  return audioEventLabels[eventType]
+}
+
+export function compareVersionLabels(left: string, right: string) {
+  const leftParts = left.replace(/[^0-9.]/g, '').split('.').map(Number)
+  const rightParts = right.replace(/[^0-9.]/g, '').split('.').map(Number)
+  const maxLength = Math.max(leftParts.length, rightParts.length)
+
+  for (let index = 0; index < maxLength; index += 1) {
+    const leftValue = leftParts[index] ?? 0
+    const rightValue = rightParts[index] ?? 0
+
+    if (leftValue === rightValue) {
+      continue
+    }
+
+    return leftValue > rightValue ? 1 : -1
+  }
+
+  return 0
 }

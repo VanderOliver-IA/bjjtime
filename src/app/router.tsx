@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { ShellLayout } from '../components/ui/ShellLayout'
 import { ProtocolAudioPage } from '../features/audio/ProtocolAudioPage'
+import { VoicesPage } from '../features/audio/VoicesPage'
 import { ProtocolEditorPage } from '../features/editor/ProtocolEditorPage'
 import { ExecutionPage } from '../features/execution/ExecutionPage'
 import { HistoryPage } from '../features/history/HistoryPage'
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />,
+      },
+      {
+        path: 'voices',
+        element: <VoicesPage />,
       },
       {
         path: 'history',

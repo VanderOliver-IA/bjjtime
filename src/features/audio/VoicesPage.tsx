@@ -1,0 +1,466 @@
+import { Mic, PlayCircle, Plus, Save, Square, Trash2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '../../components/ui/Button'
+import { Card } from '../../components/ui/Card'
+import { audioService } from '../../services/audio/audioService'
+import { useAppStore } from '../../state/useAppStore'
+import type { AudioEventType, VoicePhrase, VoiceProfile } from '../../types/domain'
+import { getAudioEventLabel } from '../../utils/format'
+import { createVoicePhrase, createVoiceProfile } from '../../utils/protocols'
+
+const suggestedPhrases: Array<{
+  eventType: AudioEventType
+  label: string
+  messageText: string
+}> = [
+  {
+    eventType: 'STEP_START',
+    label: 'Vamos aquecer',
+    messageText: 'Vamos aquecer.',
+  },
+  {
+    eventType: 'STEP_START',
+    label: 'Sem moleza',
+    messageText: 'Vamos la! Sem moleza!',
+  },
+  {
+    eventType: 'STEP_WARNING_30',
+    label: 'Aviso 30 segundos',
+    messageText: 'Faltam so 30 segundos.',
+  },
+  {
+    eventType: 'STEP_WARNING_5',
+    label: 'Aviso 5 segundos',
+    messageText: '5 segundos!',
+  },
+  {
+    eventType: 'STEP_END',
+    label: 'Acabou',
+    messageText: 'Acabou!',
+  },
+]
+
+export function VoicesPage() {
+  const voiceProfiles = useAppStore((state) => state.voiceProfiles)
+  const defaultVolume = useAppStore((state) => state.settings.defaultVolume)
+  const upsertVoiceProfile = useAppStore((state) => state.upsertVoiceProfile)
+  const deleteVoiceProfile = useAppStore((state) => state.deleteVoiceProfile)
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    voiceProfiles[0]?.id ?? null,
+  )
+  const [draft, setDraft] = useState<VoiceProfile>(() =>
+    voiceProfiles[0] ? structuredClone(voiceProfiles[0]) : createVoiceProfile(),
+  )
+  const [activeRecordingPhraseId, setActiveRecordingPhraseId] = useState<string | null>(null)
+  const [recorderError, setRecorderError] = useState<string | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const mediaStreamRef = useRef<MediaStream | null>(null)
+
+  useEffect(() => {
+    return () => {
+      mediaRecorderRef.current?.stop()
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
+    }
+  }, [])
+
+  function openProfile(profile: VoiceProfile) {
+    setSelectedProfileId(profile.id)
+    setDraft(structuredClone(profile))
+  }
+
+  function createNewProfile() {
+    const profile = createVoiceProfile({
+      name: `Nova voz ${voiceProfiles.length + 1}`,
+      description: 'Ex: Ludmila - Faixa Preta',
+    })
+
+    setSelectedProfileId(profile.id)
+    setDraft(profile)
+  }
+
+  function saveProfile() {
+    const savedProfile = upsertVoiceProfile({
+      ...draft,
+      updatedAt: new Date().toISOString(),
+    })
+
+    setSelectedProfileId(savedProfile.id)
+    setDraft(structuredClone(savedProfile))
+  }
+
+  function addPhrase(partial?: Partial<VoicePhrase>) {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      phrases: [...currentDraft.phrases, createVoicePhrase(partial)],
+    }))
+  }
+
+  function updatePhrase(phraseId: string, patch: Partial<VoicePhrase>) {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      phrases: currentDraft.phrases.map((phrase) =>
+        phrase.id === phraseId
+          ? {
+              ...phrase,
+              ...patch,
+              updatedAt: new Date().toISOString(),
+            }
+          : phrase,
+      ),
+    }))
+  }
+
+  async function startRecording(phraseId: string) {
+    if (!('MediaRecorder' in window) || !navigator.mediaDevices?.getUserMedia) {
+      setRecorderError('Gravacao direta nao suportada neste dispositivo.')
+      return
+    }
+
+    setRecorderError(null)
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks: BlobPart[] = []
+
+      mediaStreamRef.current = stream
+      mediaRecorderRef.current = recorder
+      setActiveRecordingPhraseId(phraseId)
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data)
+        }
+      }
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })
+        const reader = new FileReader()
+
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            updatePhrase(phraseId, {
+              audioDataUrl: reader.result,
+              audioName: `gravacao-${Date.now()}.webm`,
+            })
+          }
+        }
+
+        reader.readAsDataURL(blob)
+        stream.getTracks().forEach((track) => track.stop())
+        mediaStreamRef.current = null
+        mediaRecorderRef.current = null
+        setActiveRecordingPhraseId(null)
+      }
+
+      recorder.start()
+    } catch (error) {
+      setRecorderError(
+        error instanceof Error ? error.message : 'Nao foi possivel iniciar a gravacao.',
+      )
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
+      mediaStreamRef.current = null
+      mediaRecorderRef.current = null
+      setActiveRecordingPhraseId(null)
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop()
+  }
+
+  return (
+    <>
+      <Card>
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Biblioteca de vozes</p>
+            <h2>Grave e nomeie cada voz</h2>
+            <p>
+              Crie perfis como `Ludmila - Faixa Preta`, grave as palavras direto no app e use
+              varias frases para o mesmo gatilho. Quando houver mais de uma, o sistema sorteia
+              automaticamente na execucao.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={createNewProfile}>
+            <Plus size={16} />
+            Nova voz
+          </Button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="chip-row">
+          {voiceProfiles.map((profile) => (
+            <button
+              key={profile.id}
+              className={[
+                'button',
+                selectedProfileId === profile.id ? 'button--secondary' : 'button--ghost',
+                'button--sm',
+              ].join(' ')}
+              onClick={() => openProfile(profile)}
+            >
+              {profile.name}
+            </button>
+          ))}
+          {!voiceProfiles.length ? (
+            <span className="muted">Nenhuma voz salva ainda. Crie a primeira.</span>
+          ) : null}
+        </div>
+      </Card>
+
+      <Card className="settings-card">
+        <div className="field-grid">
+          <label className="field">
+            <span>Nome da voz</span>
+            <input
+              value={draft.name}
+              onChange={(event) =>
+                setDraft((currentDraft) => ({ ...currentDraft, name: event.target.value }))
+              }
+              placeholder="Ex: Ludmila - Faixa Preta"
+            />
+          </label>
+          <label className="field">
+            <span>Descricao</span>
+            <input
+              value={draft.description}
+              onChange={(event) =>
+                setDraft((currentDraft) => ({
+                  ...currentDraft,
+                  description: event.target.value,
+                }))
+              }
+              placeholder="Ex: voz oficial do aquecimento"
+            />
+          </label>
+        </div>
+
+        <div className="chip-row">
+          {suggestedPhrases.map((phrase) => (
+            <button
+              key={`${phrase.eventType}-${phrase.label}`}
+              className="button button--ghost button--sm"
+              onClick={() => addPhrase(phrase)}
+            >
+              {phrase.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="card-actions">
+          <Button onClick={saveProfile}>
+            <Save size={16} />
+            Salvar voz
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              addPhrase({
+                label: `Nova frase ${draft.phrases.length + 1}`,
+                messageText: 'Nova chamada',
+              })
+            }
+          >
+            <Plus size={16} />
+            Adicionar frase
+          </Button>
+          {selectedProfileId ? (
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (window.confirm(`Excluir a voz ${draft.name}?`)) {
+                  const remainingProfiles = voiceProfiles.filter(
+                    (profile) => profile.id !== selectedProfileId,
+                  )
+
+                  deleteVoiceProfile(selectedProfileId)
+
+                  if (remainingProfiles[0]) {
+                    openProfile(remainingProfiles[0])
+                    return
+                  }
+
+                  setSelectedProfileId(null)
+                  setDraft(
+                    createVoiceProfile({
+                      name: 'Nova voz',
+                      description: 'Ex: Ludmila - Faixa Preta',
+                    }),
+                  )
+                }
+              }}
+            >
+              <Trash2 size={16} />
+              Excluir voz
+            </Button>
+          ) : null}
+        </div>
+
+        {recorderError ? <p className="muted">{recorderError}</p> : null}
+      </Card>
+
+      <section className="audio-events-grid">
+        {draft.phrases.map((phrase) => (
+          <Card key={phrase.id} className="audio-row">
+            <div className="step-card__title">
+              <div>
+                <span className="step-chip">{getAudioEventLabel(phrase.eventType)}</span>
+                <h3>{phrase.label}</h3>
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <label className="field">
+                <span>Nome da frase</span>
+                <input
+                  value={phrase.label}
+                  onChange={(event) => updatePhrase(phrase.id, { label: event.target.value })}
+                />
+              </label>
+              <label className="field">
+                <span>Usar em</span>
+                <select
+                  value={phrase.eventType}
+                  onChange={(event) =>
+                    updatePhrase(phrase.id, {
+                      eventType: event.target.value as AudioEventType,
+                    })
+                  }
+                >
+                  {suggestedEventTypes.map((eventType) => (
+                    <option key={eventType} value={eventType}>
+                      {getAudioEventLabel(eventType)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <label className="field">
+              <span>Texto base</span>
+              <input
+                value={phrase.messageText}
+                onChange={(event) =>
+                  updatePhrase(phrase.id, { messageText: event.target.value })
+                }
+                placeholder="Ex: Faltam so 30 segundos."
+              />
+              <small>
+                Se voce gravar o audio, o texto vira apenas uma referencia visual.
+              </small>
+            </label>
+
+            <div className="audio-upload-row">
+              {activeRecordingPhraseId === phrase.id ? (
+                <Button variant="danger" onClick={stopRecording}>
+                  <Square size={16} />
+                  Parar gravacao
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={() => void startRecording(phrase.id)}>
+                  <Mic size={16} />
+                  Gravar no app
+                </Button>
+              )}
+
+              <label className="button button--ghost button--md audio-upload-button">
+                <Upload size={16} />
+                Enviar audio
+                <input
+                  accept="audio/*"
+                  className="sr-only"
+                  type="file"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0]
+
+                    if (!file) {
+                      return
+                    }
+
+                    updatePhrase(phrase.id, {
+                      audioDataUrl: await readFileAsDataUrl(file),
+                      audioName: file.name,
+                    })
+                  }}
+                />
+              </label>
+
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  audioService.play({
+                    message: phrase.messageText,
+                    customAudioDataUrl: phrase.audioDataUrl,
+                    volume: defaultVolume,
+                  })
+                }
+              >
+                <PlayCircle size={16} />
+                Testar
+              </Button>
+
+              <Button
+                variant="danger"
+                onClick={() =>
+                  setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    phrases: currentDraft.phrases.filter((item) => item.id !== phrase.id),
+                  }))
+                }
+              >
+                <Trash2 size={16} />
+                Remover frase
+              </Button>
+            </div>
+
+            <small>
+              {phrase.audioName
+                ? `Audio atual: ${phrase.audioName}`
+                : 'Nenhuma gravacao ainda. Pode usar gravacao direta ou enviar arquivo.'}
+            </small>
+          </Card>
+        ))}
+      </section>
+    </>
+  )
+}
+
+const suggestedEventTypes: AudioEventType[] = [
+  'PROTOCOL_PRE_START',
+  'PROTOCOL_START',
+  'STEP_START',
+  'STEP_WARNING_30',
+  'STEP_WARNING_20',
+  'STEP_WARNING_10',
+  'STEP_WARNING_5',
+  'STEP_COUNTDOWN_3',
+  'STEP_COUNTDOWN_2',
+  'STEP_COUNTDOWN_1',
+  'STEP_END',
+  'STEP_TRANSITION',
+  'REST_START',
+  'REST_WARNING',
+  'LAST_ROUND_START',
+  'PROTOCOL_END',
+  'PROTOCOL_CANCELLED',
+]
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+
+      reject(new Error('Falha ao carregar audio.'))
+    }
+
+    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar audio.'))
+    reader.readAsDataURL(file)
+  })
+}

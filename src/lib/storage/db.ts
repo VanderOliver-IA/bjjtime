@@ -8,6 +8,7 @@ const emptyState: PersistedAppState = {
   protocols: [],
   settings: createDefaultSettings(),
   history: [],
+  voiceProfiles: [],
 }
 
 export async function loadAppState(): Promise<PersistedAppState> {
@@ -31,6 +32,7 @@ export async function loadAppState(): Promise<PersistedAppState> {
         }
       : defaultSettings,
     history: storedState.history ?? [],
+    voiceProfiles: storedState.voiceProfiles ?? [],
   }
 }
 

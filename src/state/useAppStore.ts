@@ -7,11 +7,13 @@ import type {
   ExecutionHistory,
   PersistedAppState,
   Protocol,
+  VoiceProfile,
 } from '../types/domain'
 import {
   cloneProtocol,
   createBlankProtocol,
   createDefaultSettings,
+  createVoiceProfile,
   duplicateProtocol as duplicateProtocolHelper,
 } from '../utils/protocols'
 
@@ -25,6 +27,8 @@ interface AppStoreState extends PersistedAppState {
   toggleFavorite: (protocolId: string) => void
   createFromTemplate: (templateId: string) => Protocol | null
   updateSettings: (patch: Partial<AppSettings>) => void
+  upsertVoiceProfile: (profile: VoiceProfile) => VoiceProfile
+  deleteVoiceProfile: (profileId: string) => void
   saveAudioEvents: (
     protocolId: string,
     audioEvents: AudioEventSetting[],
@@ -44,6 +48,7 @@ function persistSnapshot(get: () => AppStoreState) {
     protocols: state.protocols,
     settings: state.settings,
     history: state.history,
+    voiceProfiles: state.voiceProfiles,
   })
 }
 
@@ -51,6 +56,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
   protocols: [],
   settings: defaultSettings,
   history: [],
+  voiceProfiles: [],
   hydrated: false,
   hydrate: async () => {
     if (get().hydrated) {
@@ -64,6 +70,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       settings: state.settings,
       history: state.history.sort((left, right) =>
         right.finishedAt.localeCompare(left.finishedAt),
+      ),
+      voiceProfiles: (state.voiceProfiles ?? []).sort((left, right) =>
+        right.updatedAt.localeCompare(left.updatedAt),
       ),
       hydrated: true,
     })
@@ -160,6 +169,57 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ...state.settings,
         ...patch,
       },
+    }))
+
+    void persistSnapshot(get)
+  },
+  upsertVoiceProfile: (profile) => {
+    const nextProfile = createVoiceProfile(profile)
+    nextProfile.updatedAt = new Date().toISOString()
+
+    let savedProfile = nextProfile
+
+    set((state) => {
+      const existingIndex = state.voiceProfiles.findIndex((item) => item.id === nextProfile.id)
+
+      if (existingIndex === -1) {
+        savedProfile = {
+          ...nextProfile,
+          createdAt: nextProfile.createdAt || new Date().toISOString(),
+        }
+
+        return {
+          voiceProfiles: [savedProfile, ...state.voiceProfiles].sort((left, right) =>
+            right.updatedAt.localeCompare(left.updatedAt),
+          ),
+        }
+      }
+
+      const voiceProfiles = [...state.voiceProfiles]
+      voiceProfiles[existingIndex] = savedProfile
+
+      return {
+        voiceProfiles: voiceProfiles.sort((left, right) =>
+          right.updatedAt.localeCompare(left.updatedAt),
+        ),
+      }
+    })
+
+    void persistSnapshot(get)
+
+    return savedProfile
+  },
+  deleteVoiceProfile: (profileId) => {
+    set((state) => ({
+      voiceProfiles: state.voiceProfiles.filter((profile) => profile.id !== profileId),
+      protocols: state.protocols.map((protocol) =>
+        protocol.voicePack === `profile:${profileId}`
+          ? {
+              ...protocol,
+              voicePack: state.settings.defaultVoice,
+            }
+          : protocol,
+      ),
     }))
 
     void persistSnapshot(get)

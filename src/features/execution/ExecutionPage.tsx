@@ -21,7 +21,12 @@ import type {
   Step,
 } from '../../types/domain'
 import { formatClock, formatDurationLabel } from '../../utils/format'
-import { computeProtocolTotalSeconds, createId, resolveAudioMessage } from '../../utils/protocols'
+import {
+  computeProtocolTotalSeconds,
+  createId,
+  pickVoiceProfilePhrase,
+  resolveAudioMessage,
+} from '../../utils/protocols'
 
 type RunStatus = 'preparing' | 'running' | 'paused' | 'finished'
 
@@ -36,6 +41,7 @@ export function ExecutionPage() {
   const { protocolId } = useParams()
   const protocols = useAppStore((state) => state.protocols)
   const settings = useAppStore((state) => state.settings)
+  const voiceProfiles = useAppStore((state) => state.voiceProfiles)
   const addHistory = useAppStore((state) => state.addHistory)
   const protocol = useMemo(
     () => protocols.find((item) => item.id === protocolId) ?? null,
@@ -62,6 +68,7 @@ export function ExecutionPage() {
       navigateTo={navigate}
       protocol={protocol}
       settings={settings}
+      voiceProfiles={voiceProfiles}
     />
   )
 }
@@ -71,6 +78,7 @@ interface ExecutionRunnerProps {
   navigateTo: ReturnType<typeof useNavigate>
   protocol: Protocol
   settings: AppSettings
+  voiceProfiles: ReturnType<typeof useAppStore.getState>['voiceProfiles']
 }
 
 function ExecutionRunner({
@@ -78,6 +86,7 @@ function ExecutionRunner({
   navigateTo,
   protocol,
   settings,
+  voiceProfiles,
 }: ExecutionRunnerProps) {
   const totalProtocolSeconds = computeProtocolTotalSeconds(protocol)
   const [status, setStatus] = useState<RunStatus>('preparing')
@@ -129,18 +138,25 @@ function ExecutionRunner({
         return
       }
 
-      const message = resolveAudioMessage(protocol, eventType, replacements)
+      const profilePhrase = pickVoiceProfilePhrase(voiceProfiles, protocol.voicePack, eventType)
+      const message = profilePhrase?.messageText
+        ? Object.entries(replacements).reduce((currentMessage, [token, value]) => {
+            return currentMessage.replaceAll(`{${token}}`, String(value))
+          }, profilePhrase.messageText)
+        : resolveAudioMessage(protocol, eventType, replacements)
 
       audioService.play({
         message,
         soundType: event.soundType,
         volume: settings.defaultVolume,
         vibrate: step.vibrationEnabled,
-        customAudioDataUrl: event.customAudioDataUrl,
-        voicePreset: protocol.voicePack,
+        customAudioDataUrl: event.customAudioDataUrl ?? profilePhrase?.audioDataUrl ?? null,
+        voicePreset: protocol.voicePack.startsWith('profile:')
+          ? settings.defaultVoice
+          : protocol.voicePack,
       })
     },
-    [protocol, settings.defaultVolume],
+    [protocol, settings.defaultVoice, settings.defaultVolume, voiceProfiles],
   )
 
   const writeHistory = useCallback(
@@ -233,13 +249,21 @@ function ExecutionRunner({
   useEffect(() => {
     const preStartEvent = protocol.audioEvents.find((event) => event.eventType === 'PROTOCOL_PRE_START')
     const preStartMessage = resolveAudioMessage(protocol, 'PROTOCOL_PRE_START', {})
+    const preStartProfilePhrase = pickVoiceProfilePhrase(
+      voiceProfiles,
+      protocol.voicePack,
+      'PROTOCOL_PRE_START',
+    )
 
     audioService.play({
-      message: preStartMessage,
+      message: preStartProfilePhrase?.messageText ?? preStartMessage,
       soundType: preStartEvent?.soundType ?? 'none',
       volume: settings.defaultVolume,
-      customAudioDataUrl: preStartEvent?.customAudioDataUrl,
-      voicePreset: protocol.voicePack,
+      customAudioDataUrl:
+        preStartEvent?.customAudioDataUrl ?? preStartProfilePhrase?.audioDataUrl ?? null,
+      voicePreset: protocol.voicePack.startsWith('profile:')
+        ? settings.defaultVoice
+        : protocol.voicePack,
     })
 
     const intervalId = window.setInterval(() => {
@@ -258,7 +282,7 @@ function ExecutionRunner({
       window.clearInterval(intervalId)
       audioService.stop()
     }
-  }, [protocol, settings.defaultVolume, startStep])
+  }, [protocol, settings.defaultVoice, settings.defaultVolume, startStep, voiceProfiles])
 
   useEffect(() => {
     const canKeepScreenOn = protocol.keepScreenOn || settings.keepScreenOn
@@ -334,6 +358,7 @@ function ExecutionRunner({
     currentStep.autoNext,
     currentStepIndex,
     playProtocolEvent,
+    protocol.audioEvents,
     protocol.steps,
     status,
   ])
@@ -345,18 +370,33 @@ function ExecutionRunner({
 
     const secondsRemaining = Math.ceil(remainingMs / 1000)
     const stepPrefix = `${currentStep.id}-${currentStepIndex}`
-    const audioEventMap: Array<[number, AudioEventType]> = [
-      [
-        10,
-        currentStep.type === 'pause' || currentStep.type === 'rest'
-          ? 'REST_WARNING'
-          : 'STEP_WARNING_10',
-      ],
-      [5, 'STEP_WARNING_5'],
-      [3, 'STEP_COUNTDOWN_3'],
-      [2, 'STEP_COUNTDOWN_2'],
-      [1, 'STEP_COUNTDOWN_1'],
-    ]
+    const isRestStep = currentStep.type === 'pause' || currentStep.type === 'rest'
+    const audioEventMap = protocol.audioEvents
+      .filter((event) => {
+        if (!event.enabled || event.triggerSecondsBeforeEnd === undefined) {
+          return false
+        }
+
+        if (isRestStep) {
+          return (
+            event.eventType === 'REST_WARNING' ||
+            event.eventType === 'STEP_COUNTDOWN_3' ||
+            event.eventType === 'STEP_COUNTDOWN_2' ||
+            event.eventType === 'STEP_COUNTDOWN_1'
+          )
+        }
+
+        return (
+          event.eventType === 'STEP_WARNING_30' ||
+          event.eventType === 'STEP_WARNING_20' ||
+          event.eventType === 'STEP_WARNING_10' ||
+          event.eventType === 'STEP_WARNING_5' ||
+          event.eventType === 'STEP_COUNTDOWN_3' ||
+          event.eventType === 'STEP_COUNTDOWN_2' ||
+          event.eventType === 'STEP_COUNTDOWN_1'
+        )
+      })
+      .map((event) => [event.triggerSecondsBeforeEnd ?? 0, event.eventType] as const)
 
     audioEventMap.forEach(([threshold, eventType]) => {
       const eventKey = `${stepPrefix}-${eventType}`
@@ -374,7 +414,15 @@ function ExecutionRunner({
         total_rounds: protocol.steps.length,
       })
     })
-  }, [currentStep, currentStepIndex, playProtocolEvent, protocol.steps, remainingMs, status])
+  }, [
+    currentStep,
+    currentStepIndex,
+    playProtocolEvent,
+    protocol.audioEvents,
+    protocol.steps,
+    remainingMs,
+    status,
+  ])
 
   function pauseOrResume() {
     if (status === 'running') {

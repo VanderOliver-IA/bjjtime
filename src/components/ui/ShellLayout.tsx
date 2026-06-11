@@ -1,4 +1,4 @@
-import { FolderClock, History, LayoutTemplate, Settings } from 'lucide-react'
+import { FolderClock, LayoutTemplate, Mic2, Settings } from 'lucide-react'
 import { useMemo } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { APP_VERSION } from '../../app/meta'
@@ -8,7 +8,7 @@ import jhLogo from '../../../logo_jh_bjj.jpeg'
 const navigationItems = [
   { to: '/', label: 'Biblioteca', icon: FolderClock },
   { to: '/templates', label: 'Modelos', icon: LayoutTemplate },
-  { to: '/history', label: 'Historico', icon: History },
+  { to: '/voices', label: 'Vozes', icon: Mic2 },
   { to: '/settings', label: 'Ajustes', icon: Settings },
 ]
 

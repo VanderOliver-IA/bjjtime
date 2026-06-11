@@ -54,6 +54,26 @@ export interface AudioEventSetting {
   customAudioName?: string | null
 }
 
+export interface VoicePhrase {
+  id: string
+  eventType: AudioEventType
+  label: string
+  messageText: string
+  audioDataUrl?: string | null
+  audioName?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VoiceProfile {
+  id: string
+  name: string
+  description: string
+  createdAt: string
+  updatedAt: string
+  phrases: VoicePhrase[]
+}
+
 export interface Step {
   id: string
   name: string
@@ -122,4 +142,5 @@ export interface PersistedAppState {
   protocols: Protocol[]
   settings: AppSettings
   history: ExecutionHistory[]
+  voiceProfiles: VoiceProfile[]
 }

@@ -11,9 +11,10 @@ import {
 } from 'lucide-react'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { APK_DOWNLOAD_PATH, APK_VERSION } from '../../app/meta'
+import { APK_DOWNLOAD_URL, APK_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { useReleaseInfo } from '../../hooks/useReleaseInfo'
 import { useAppStore } from '../../state/useAppStore'
 import { formatDateShort, formatDurationLabel, getCategoryLabel } from '../../utils/format'
 import { computeProtocolTotalSeconds } from '../../utils/protocols'
@@ -27,6 +28,7 @@ export function HomePage() {
   const deleteProtocol = useAppStore((state) => state.deleteProtocol)
   const [search, setSearch] = useState(() => window.sessionStorage.getItem('home-search') ?? '')
   const deferredSearch = useDeferredValue(search)
+  const { hasUpdate, isChecking, isInstalledApp, releaseInfo, updateUrl } = useReleaseInfo()
 
   useEffect(() => {
     window.sessionStorage.setItem('home-search', search)
@@ -66,12 +68,36 @@ export function HomePage() {
             <FolderPlus size={18} />
             Novo protocolo
           </Button>
-          <a className="button button--ghost button--md" href={APK_DOWNLOAD_PATH} download>
+          <a className="button button--ghost button--md" href={APK_DOWNLOAD_URL}>
             <Download size={18} />
             Instalar APK
           </a>
         </div>
       </Card>
+
+      {isInstalledApp && !isChecking ? (
+        <Card>
+          <div className="page-header">
+            <div>
+              <p className="eyebrow">Atualizacao do app</p>
+              <h2>{hasUpdate ? 'Nova versao disponivel' : 'App atualizado'}</h2>
+              <p>
+                {hasUpdate && releaseInfo
+                  ? `A versao ${releaseInfo.appVersion} ja esta publicada. Toque abaixo para baixar e atualizar o APK.`
+                  : 'Seu aplicativo local esta alinhado com a release atual conhecida.'}
+              </p>
+            </div>
+          </div>
+          {hasUpdate ? (
+            <div className="card-actions">
+              <Button onClick={() => window.location.assign(updateUrl)}>
+                <Download size={16} />
+                Atualizar app
+              </Button>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
 
       <Card>
         <div className="page-header">
@@ -85,12 +111,12 @@ export function HomePage() {
           </div>
         </div>
         <div className="card-actions">
-          <a className="button button--primary button--md" href={APK_DOWNLOAD_PATH} download>
+          <a className="button button--primary button--md" href={APK_DOWNLOAD_URL}>
             <Download size={18} />
             Baixar APK Android
           </a>
-          <Button variant="ghost" onClick={() => navigate('/settings')}>
-            Personalizar no aparelho
+          <Button variant="ghost" onClick={() => navigate('/voices')}>
+            Configurar vozes
           </Button>
         </div>
       </Card>

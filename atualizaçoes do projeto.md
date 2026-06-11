@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.05`
+`V1.00.06`
 
 ## Historico
+
+### V1.00.06 - 2026-06-11
+
+- Biblioteca dedicada de vozes com criacao de perfis nomeados e gravacao direta no aplicativo.
+- Integracao dos perfis gravados na configuracao de audio do protocolo, com frases aleatorias por gatilho quando houver mais de uma opcao.
+- Verificacao remota de atualizacao no app instalado, exibindo botao para baixar a nova APK publicada.
 
 ### V1.00.05 - 2026-06-11
 
