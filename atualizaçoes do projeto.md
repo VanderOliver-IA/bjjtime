@@ -2,9 +2,14 @@
 
 ## Versao Atual
 
-`V1.00.00`
+`V1.00.01`
 
 ## Historico
+
+### V1.00.01 - 2026-06-11
+
+- Ajuste da esteira de deploy para producao com Dockerfile multi-stage.
+- Inclusao de Nginx com fallback SPA para servir o build do Vite corretamente no Coolify.
 
 ### V1.00.00 - 2026-06-11
 
