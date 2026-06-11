@@ -2,9 +2,14 @@
 
 ## Versao Atual
 
-`V1.00.01`
+`V1.00.02`
 
 ## Historico
+
+### V1.00.02 - 2026-06-11
+
+- Declaracao das dependencias de runtime ausentes para garantir build limpo no Coolify.
+- Publicacao pronta para ambiente online reproduzir exatamente a build local.
 
 ### V1.00.01 - 2026-06-11
 
