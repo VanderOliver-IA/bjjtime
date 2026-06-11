@@ -1,4 +1,5 @@
 import {
+  Download,
   Bolt,
   Copy,
   FolderPlus,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { APK_DOWNLOAD_PATH, APK_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { useAppStore } from '../../state/useAppStore'
@@ -19,6 +21,7 @@ import { computeProtocolTotalSeconds } from '../../utils/protocols'
 export function HomePage() {
   const navigate = useNavigate()
   const protocols = useAppStore((state) => state.protocols)
+  const branding = useAppStore((state) => state.settings.branding)
   const toggleFavorite = useAppStore((state) => state.toggleFavorite)
   const duplicateProtocol = useAppStore((state) => state.duplicateProtocol)
   const deleteProtocol = useAppStore((state) => state.deleteProtocol)
@@ -52,20 +55,42 @@ export function HomePage() {
   return (
     <>
       <Card className="hero-card">
-        <p className="eyebrow">MVP funcional</p>
-        <h2>Configure uma vez e so aperte iniciar.</h2>
+        <p className="eyebrow">{branding.eyebrow}</p>
+        <h2>Instale no Android e rode o timer mesmo sem internet.</h2>
         <p>
-          Monte drills, pausas e rounds em poucos toques. O BJJ Timer segura o ritmo da
-          aula e deixa voce focado no treino.
+          Monte drills, pausas e rounds em poucos toques. O app salva tudo localmente no
+          aparelho, incluindo voz, logo, nome e personalizacao do seu centro de treino.
         </p>
         <div className="grid-actions">
           <Button onClick={() => navigate('/protocol/new')}>
             <FolderPlus size={18} />
             Novo protocolo
           </Button>
-          <Button variant="ghost" onClick={() => navigate('/templates')}>
-            <Play size={18} />
-            Ver modelos
+          <a className="button button--ghost button--md" href={APK_DOWNLOAD_PATH} download>
+            <Download size={18} />
+            Instalar APK
+          </a>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Android offline</p>
+            <h2>APK pronto para baixar no celular</h2>
+            <p>
+              Toque em instalar para baixar o arquivo `bjjtime-v{APK_VERSION}.apk` direto
+              do servidor e usar o sistema no Android com dados locais.
+            </p>
+          </div>
+        </div>
+        <div className="card-actions">
+          <a className="button button--primary button--md" href={APK_DOWNLOAD_PATH} download>
+            <Download size={18} />
+            Baixar APK Android
+          </a>
+          <Button variant="ghost" onClick={() => navigate('/settings')}>
+            Personalizar no aparelho
           </Button>
         </div>
       </Card>

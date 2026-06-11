@@ -15,6 +15,7 @@ const navigationItems = [
 export function ShellLayout() {
   const navigate = useNavigate()
   const protocols = useAppStore((state) => state.protocols)
+  const branding = useAppStore((state) => state.settings.branding)
   const quickLaunchProtocol = useMemo(() => {
     const ordered = [...protocols].sort((left, right) => {
       if (left.isFavorite !== right.isFavorite) {
@@ -32,12 +33,15 @@ export function ShellLayout() {
       <header className="shell__header">
         <div className="brand-lockup">
           <div className="brand-mark">
-            <img src={jhLogo} alt="Logo JH Centro de Treinamento de Jiu-Jitsu" />
+            <img
+              src={branding.logoDataUrl ?? jhLogo}
+              alt={`Logo ${branding.title}`}
+            />
           </div>
           <div>
-            <p className="eyebrow">JH BJJ</p>
-            <h1 className="shell__title">Centro de Treinamento de Jiu-Jitsu</h1>
-            <p className="brand-subtitle">Timer oficial de treino</p>
+            <p className="eyebrow">{branding.eyebrow}</p>
+            <h1 className="shell__title">{branding.title}</h1>
+            <p className="brand-subtitle">{branding.subtitle}</p>
             <p className="version-pill">BJJ Timer {APP_VERSION}</p>
           </div>
         </div>

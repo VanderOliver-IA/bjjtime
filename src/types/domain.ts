@@ -110,6 +110,12 @@ export interface AppSettings {
   keepScreenOn: boolean
   theme: 'light' | 'dark' | 'system'
   language: 'pt-BR' | 'en-US'
+  branding: {
+    eyebrow: string
+    title: string
+    subtitle: string
+    logoDataUrl: string | null
+  }
 }
 
 export interface PersistedAppState {

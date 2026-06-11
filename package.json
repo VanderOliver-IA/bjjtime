@@ -1,15 +1,21 @@
 {
   "name": "bjjtime",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android:sync": "npx cap sync android",
+    "android:copy": "npx cap copy android",
+    "android:build:debug": "cd android && ./gradlew assembleDebug",
+    "android:apk:copy": "mkdir -p public/downloads && cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/bjjtime-v1.0.5.apk"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
     "idb-keyval": "^6.2.5",
     "lucide-react": "^0.547.0",
     "react": "^19.2.6",
@@ -18,6 +24,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",

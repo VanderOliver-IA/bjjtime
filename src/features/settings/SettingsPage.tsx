@@ -1,9 +1,11 @@
 import { SlidersHorizontal, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { APK_DOWNLOAD_PATH, APK_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
+import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 export function SettingsPage() {
   const settings = useAppStore((state) => state.settings)
@@ -48,6 +50,102 @@ export function SettingsPage() {
 
       <Card className="settings-card">
         <div className="field-grid">
+          <label className="field">
+            <span>Nome principal</span>
+            <input
+              value={settings.branding.title}
+              onChange={(event) =>
+                updateSettings({
+                  branding: {
+                    ...settings.branding,
+                    title: event.target.value,
+                  },
+                })
+              }
+            />
+          </label>
+
+          <label className="field">
+            <span>Etiqueta superior</span>
+            <input
+              value={settings.branding.eyebrow}
+              onChange={(event) =>
+                updateSettings({
+                  branding: {
+                    ...settings.branding,
+                    eyebrow: event.target.value,
+                  },
+                })
+              }
+            />
+          </label>
+
+          <label className="field">
+            <span>Subtitulo</span>
+            <input
+              value={settings.branding.subtitle}
+              onChange={(event) =>
+                updateSettings({
+                  branding: {
+                    ...settings.branding,
+                    subtitle: event.target.value,
+                  },
+                })
+              }
+            />
+          </label>
+
+          <label className="field">
+            <span>Logo local</span>
+            <div className="settings-logo-panel">
+              <img
+                className="settings-logo-preview"
+                src={settings.branding.logoDataUrl ?? jhLogo}
+                alt={`Logo ${settings.branding.title}`}
+              />
+              <div className="audio-upload-row">
+                <label className="button button--ghost button--md audio-upload-button">
+                  Enviar logo
+                  <input
+                    accept="image/*"
+                    className="sr-only"
+                    type="file"
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0]
+
+                      if (!file) {
+                        return
+                      }
+
+                      updateSettings({
+                        branding: {
+                          ...settings.branding,
+                          logoDataUrl: await readFileAsDataUrl(file),
+                        },
+                      })
+                    }}
+                  />
+                </label>
+                {settings.branding.logoDataUrl ? (
+                  <Button
+                    variant="danger"
+                    onClick={() =>
+                      updateSettings({
+                        branding: {
+                          ...settings.branding,
+                          logoDataUrl: null,
+                        },
+                      })
+                    }
+                  >
+                    Remover logo
+                  </Button>
+                ) : null}
+              </div>
+              <small>A logo enviada fica salva localmente no proprio aparelho.</small>
+            </div>
+          </label>
+
           <label className="field">
             <span>Volume padrao</span>
             <input
@@ -152,6 +250,24 @@ export function SettingsPage() {
       <Card>
         <div className="page-header">
           <div>
+            <p className="eyebrow">Instalacao Android</p>
+            <h2>APK direto no telefone</h2>
+            <p>
+              Baixe a versao `v{APK_VERSION}` diretamente do servidor e instale no Android para
+              usar o timer offline com configuracoes locais.
+            </p>
+          </div>
+        </div>
+        <div className="card-actions">
+          <a className="button button--primary button--md" href={APK_DOWNLOAD_PATH} download>
+            Instalar APK
+          </a>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="page-header">
+          <div>
             <p className="eyebrow">Dados locais</p>
             <h2>Operacoes seguras</h2>
             <p>O app e offline-first. As alteracoes aqui afetam apenas este dispositivo.</p>
@@ -171,4 +287,22 @@ export function SettingsPage() {
       </Card>
     </>
   )
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+
+      reject(new Error('Falha ao carregar arquivo.'))
+    }
+
+    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar arquivo.'))
+    reader.readAsDataURL(file)
+  })
 }

@@ -47,6 +47,12 @@ export function createDefaultSettings(): AppSettings {
     keepScreenOn: true,
     theme: 'dark',
     language: 'pt-BR',
+    branding: {
+      eyebrow: 'JH BJJ',
+      title: 'Centro de Treinamento de Jiu-Jitsu',
+      subtitle: 'Timer oficial de treino',
+      logoDataUrl: null,
+    },
   }
 }
 

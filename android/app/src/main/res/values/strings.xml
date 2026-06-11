@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BJJ Time</string>
+    <string name="title_activity_main">BJJ Time</string>
+    <string name="package_name">cloud.olamundodigital.bjjtime</string>
+    <string name="custom_url_scheme">cloud.olamundodigital.bjjtime</string>
+</resources>

@@ -12,6 +12,7 @@ const emptyState: PersistedAppState = {
 
 export async function loadAppState(): Promise<PersistedAppState> {
   const storedState = await get<PersistedAppState | undefined>(APP_STATE_KEY)
+  const defaultSettings = createDefaultSettings()
 
   if (!storedState) {
     return emptyState
@@ -19,7 +20,16 @@ export async function loadAppState(): Promise<PersistedAppState> {
 
   return {
     protocols: storedState.protocols ?? [],
-    settings: storedState.settings ?? createDefaultSettings(),
+    settings: storedState.settings
+      ? {
+          ...defaultSettings,
+          ...storedState.settings,
+          branding: {
+            ...defaultSettings.branding,
+            ...storedState.settings.branding,
+          },
+        }
+      : defaultSettings,
     history: storedState.history ?? [],
   }
 }

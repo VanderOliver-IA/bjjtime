@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.04`
+`V1.00.05`
 
 ## Historico
+
+### V1.00.05 - 2026-06-11
+
+- Empacotamento Android com base Capacitor e geracao de APK offline para instalacao direta no telefone.
+- Botao `Instalar APK` publicado no app web apontando para o arquivo hospedado no proprio servidor.
+- Personalizacao local de marca no aparelho com nome, subtitulo e logo salvos no proprio dispositivo.
 
 ### V1.00.04 - 2026-06-11
 

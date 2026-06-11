@@ -1,11 +1,13 @@
 import type { PropsWithChildren } from 'react'
 import { useEffect } from 'react'
+import jhLogo from '../../logo_jh_bjj.jpeg'
 import { useAppStore } from '../state/useAppStore'
 
 export function AppProviders({ children }: PropsWithChildren) {
   const hydrated = useAppStore((state) => state.hydrated)
   const hydrate = useAppStore((state) => state.hydrate)
   const theme = useAppStore((state) => state.settings.theme)
+  const branding = useAppStore((state) => state.settings.branding)
 
   useEffect(() => {
     if (!hydrated) {
@@ -27,11 +29,17 @@ export function AppProviders({ children }: PropsWithChildren) {
   if (!hydrated) {
     return (
       <div className="app-loading-shell">
-        <div className="pulse-ring" />
+        <div className="pulse-ring">
+          <img
+            className="pulse-ring__logo"
+            src={branding.logoDataUrl ?? jhLogo}
+            alt={`Logo ${branding.title}`}
+          />
+        </div>
         <div>
-          <p className="eyebrow">JH BJJ</p>
+          <p className="eyebrow">{branding.eyebrow}</p>
           <h1>Carregando o tatame</h1>
-          <p>Preparando protocolos, audio e configuracoes locais do centro de treinamento.</p>
+          <p>Preparando protocolos, audio e configuracoes locais de {branding.title}.</p>
         </div>
       </div>
     )
