@@ -112,6 +112,80 @@ const voicePhraseBundles: Array<{
   },
 ]
 
+const voiceStyleAssistants: Array<{
+  id: string
+  title: string
+  description: string
+  profileName: string
+  profileDescription: string
+  phrases: Array<{
+    eventType: AudioEventType
+    label: string
+    messageText: string
+  }>
+}> = [
+  {
+    id: 'technical-coach',
+    title: 'Professor tecnico',
+    description: 'Falas objetivas, claras e focadas na execucao correta.',
+    profileName: 'Professor tecnico',
+    profileDescription: 'Perfil com linguagem direta e orientacao tecnica.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Inicio tecnico', messageText: 'Vamos ajustar a tecnica.' },
+      { eventType: 'STEP_START', label: 'Detalhe fino', messageText: 'Executa com precisao.' },
+      { eventType: 'STEP_WARNING_30', label: 'Revisao 30', messageText: 'Faltam 30 segundos. Capricha no detalhe.' },
+      { eventType: 'STEP_WARNING_10', label: 'Fechamento tecnico', messageText: 'So mais 10. Mantem o controle.' },
+      { eventType: 'STEP_END', label: 'Fim tecnico', messageText: 'Acabou. Troca com controle.' },
+      { eventType: 'REST_START', label: 'Respira tecnico', messageText: 'Respira e revisa o movimento.' },
+    ],
+  },
+  {
+    id: 'motivator-coach',
+    title: 'Professor motivador',
+    description: 'Mais energia, cobranca e presenca para puxar o treino.',
+    profileName: 'Professor motivador',
+    profileDescription: 'Perfil forte para ritmo alto e incentivo constante.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Comeca forte', messageText: 'Vamos la! Sem moleza!' },
+      { eventType: 'STEP_START', label: 'Presenca', messageText: 'Bora! Quero intensidade agora!' },
+      { eventType: 'STEP_WARNING_30', label: 'Aviso 30 motivador', messageText: 'Faltam 30 segundos. Nao para!' },
+      { eventType: 'STEP_WARNING_5', label: 'Ultimos 5 motivador', messageText: '5 segundos! Fecha forte!' },
+      { eventType: 'STEP_END', label: 'Acabou motivador', messageText: 'Acabou! Boa!' },
+      { eventType: 'PROTOCOL_END', label: 'Fim motivador', messageText: 'Boa! Treino concluido!' },
+    ],
+  },
+  {
+    id: 'kids-coach',
+    title: 'Infantil',
+    description: 'Tonalidade simples, amigavel e facil para turma infantil.',
+    profileName: 'Turma infantil',
+    profileDescription: 'Perfil leve e claro para criancas.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Vamos brincar e treinar', messageText: 'Vamos comecar! Todo mundo atento!' },
+      { eventType: 'STEP_START', label: 'Aquecimento kids', messageText: 'Vamos aquecer com energia!' },
+      { eventType: 'STEP_WARNING_30', label: 'Kids 30', messageText: 'Faltam 30 segundos, pessoal!' },
+      { eventType: 'STEP_WARNING_5', label: 'Kids 5', messageText: '5 segundos! Ja esta acabando!' },
+      { eventType: 'STEP_END', label: 'Fim kids', messageText: 'Acabou! Muito bem!' },
+      { eventType: 'REST_START', label: 'Descanso kids', messageText: 'Agora respira e se prepara.' },
+    ],
+  },
+  {
+    id: 'competition-coach',
+    title: 'Competicao',
+    description: 'Comandos curtos e duros para treino de intensidade e foco.',
+    profileName: 'Competicao',
+    profileDescription: 'Perfil seco e rapido para clima de luta.',
+    phrases: [
+      { eventType: 'STEP_START', label: 'Valendo competicao', messageText: 'Valendo!' },
+      { eventType: 'STEP_START', label: 'Pressao competicao', messageText: 'Pressiona! Nao entrega!' },
+      { eventType: 'STEP_WARNING_20', label: 'Competicao 20', messageText: '20 segundos! Mantem a pressao!' },
+      { eventType: 'STEP_WARNING_5', label: 'Competicao 5', messageText: '5 segundos! Fecha agora!' },
+      { eventType: 'STEP_END', label: 'Fim competicao', messageText: 'Tempo!' },
+      { eventType: 'LAST_ROUND_START', label: 'Ultimo round competicao', messageText: 'Ultimo round! Tudo agora!' },
+    ],
+  },
+]
+
 export function VoicesPage() {
   const voiceProfiles = useAppStore((state) => state.voiceProfiles)
   const defaultVolume = useAppStore((state) => state.settings.defaultVolume)
@@ -185,6 +259,27 @@ export function VoicesPage() {
         ),
       ],
     }))
+  }
+
+  function createProfileFromAssistant(assistantId: string) {
+    const assistant = voiceStyleAssistants.find((item) => item.id === assistantId)
+
+    if (!assistant) {
+      return
+    }
+
+    const profile = createVoiceProfile({
+      name: assistant.profileName,
+      description: assistant.profileDescription,
+      phrases: assistant.phrases.map((phrase) =>
+        createVoicePhrase({
+          ...phrase,
+        }),
+      ),
+    })
+
+    setSelectedProfileId(profile.id)
+    setDraft(profile)
   }
 
   function updatePhrase(phraseId: string, patch: Partial<VoicePhrase>) {
@@ -278,6 +373,31 @@ export function VoicesPage() {
             <Plus size={16} />
             Nova voz
           </Button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="page-header">
+          <div>
+            <p className="eyebrow">Assistentes de estilo</p>
+            <h2>Crie uma voz-base em um toque</h2>
+            <p>
+              Escolha um estilo de professor e eu monto um perfil completo com frases base para
+              aquecimento, avisos, descanso e encerramento.
+            </p>
+          </div>
+        </div>
+        <div className="voice-style-grid">
+          {voiceStyleAssistants.map((assistant) => (
+            <button
+              key={assistant.id}
+              className="voice-style-card"
+              onClick={() => createProfileFromAssistant(assistant.id)}
+            >
+              <strong>{assistant.title}</strong>
+              <span>{assistant.description}</span>
+            </button>
+          ))}
         </div>
       </Card>
 

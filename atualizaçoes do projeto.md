@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.07`
+`V1.00.08`
 
 ## Historico
+
+### V1.00.08 - 2026-06-11
+
+- Assistentes de estilo adicionados para criar vozes-base como professor tecnico, motivador, infantil e competicao.
+- Perfis completos agora podem nascer em um toque, prontos para gravacao e ajuste fino direto no app.
+- Atualizacao da APK e do feed de release para distribuir essa nova camada de criacao assistida.
 
 ### V1.00.07 - 2026-06-11
 

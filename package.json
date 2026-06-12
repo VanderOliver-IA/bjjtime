@@ -1,7 +1,7 @@
 {
   "name": "bjjtime",
   "private": true,
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
     "android:sync": "npx cap sync android",
     "android:copy": "npx cap copy android",
     "android:build:debug": "cd android && ./gradlew assembleDebug",
-    "android:apk:copy": "mkdir -p public/downloads && cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/bjjtime-v1.0.7.apk"
+    "android:apk:copy": "mkdir -p public/downloads && cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/bjjtime-v1.0.8.apk"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",

@@ -849,6 +849,12 @@ img {
   gap: 0.8rem;
 }
 
+.voice-style-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.voice-style-card,
 .voice-template-card {
   display: grid;
   gap: 0.3rem;
@@ -861,6 +867,13 @@ img {
   box-shadow: var(--shadow-md);
 }
 
+.voice-style-card {
+  background:
+    linear-gradient(135deg, rgba(242, 93, 110, 0.16), rgba(255, 193, 73, 0.12)),
+    var(--color-panel-strong);
+}
+
+.voice-style-card strong,
 .voice-template-card strong {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 1.4rem;
@@ -868,6 +881,7 @@ img {
   letter-spacing: 0.03em;
 }
 
+.voice-style-card span,
 .voice-template-card span {
   color: var(--color-muted);
 }
@@ -968,6 +982,10 @@ img {
   }
 
   .voice-template-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-style-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

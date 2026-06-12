@@ -1,11 +1,11 @@
 {
-  "appVersion": "V1.00.07",
-  "apkVersion": "1.0.7",
-  "apkUrl": "https://www.bjjtime.olamundodigital.cloud/downloads/bjjtime-v1.0.7.apk",
-  "publishedAt": "2026-06-11T23:50:00.000Z",
+  "appVersion": "V1.00.08",
+  "apkVersion": "1.0.8",
+  "apkUrl": "https://www.bjjtime.olamundodigital.cloud/downloads/bjjtime-v1.0.8.apk",
+  "publishedAt": "2026-06-12T00:05:00.000Z",
   "notes": [
-    "Pacotes visuais prontos para voz: aquecimento, pressao, descanso e encerramento.",
-    "Indicacao visual do comportamento de cada fala: inicio, fim, x segundos e aleatorio.",
-    "Biblioteca de vozes mais rapida para montar perfis completos direto no aplicativo."
+    "Assistentes de estilo prontos para professor tecnico, motivador, infantil e competicao.",
+    "Criacao de voz-base completa em um toque para acelerar a gravacao no app.",
+    "Fluxo de vozes ainda mais rapido para montar perfis inteiros no proprio telefone."
   ]
 }

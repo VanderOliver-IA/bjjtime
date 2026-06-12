@@ -1,5 +1,5 @@
-export const APP_VERSION = 'V1.00.07'
-export const APK_VERSION = '1.0.7'
+export const APP_VERSION = 'V1.00.08'
+export const APK_VERSION = '1.0.8'
 export const SITE_URL = 'https://www.bjjtime.olamundodigital.cloud'
 export const APK_DOWNLOAD_PATH = `/downloads/bjjtime-v${APK_VERSION}.apk`
 export const APK_DOWNLOAD_URL = `${SITE_URL}${APK_DOWNLOAD_PATH}`
