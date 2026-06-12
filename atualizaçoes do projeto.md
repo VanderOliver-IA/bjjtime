@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.10`
+`V1.00.11`
 
 ## Historico
+
+### V1.00.11 - 2026-06-12
+
+- Abertura principal agora redireciona direto para o temporizador do ultimo protocolo executado.
+- Primeira execucao passa a criar e iniciar automaticamente o protocolo padrao de aquecimento.
+- Header, rodape e barra inferior reduzidos para uma composicao mais limpa, com credito e versao apenas no rodape.
 
 ### V1.00.10 - 2026-06-12
 

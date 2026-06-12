@@ -6,7 +6,7 @@ import { APP_VERSION } from '../../app/meta'
 import { useAppStore } from '../../state/useAppStore'
 
 const navigationItems = [
-  { to: '/', label: 'Biblioteca', icon: FolderClock },
+  { to: '/library', label: 'Biblioteca', icon: FolderClock },
   { to: '/templates', label: 'Modelos', icon: LayoutTemplate },
   { to: '/voices', label: 'Vozes', icon: Mic2 },
   { to: '/settings', label: 'Ajustes', icon: Settings },
@@ -15,8 +15,19 @@ const navigationItems = [
 export function ShellLayout() {
   const navigate = useNavigate()
   const protocols = useAppStore((state) => state.protocols)
+  const history = useAppStore((state) => state.history)
   const branding = useAppStore((state) => state.settings.branding)
   const quickLaunchProtocol = useMemo(() => {
+    const lastExecution = history[0]
+
+    if (lastExecution) {
+      const lastProtocol = protocols.find((protocol) => protocol.id === lastExecution.protocolId)
+
+      if (lastProtocol) {
+        return lastProtocol
+      }
+    }
+
     const ordered = [...protocols].sort((left, right) => {
       if (left.isFavorite !== right.isFavorite) {
         return left.isFavorite ? -1 : 1
@@ -26,7 +37,7 @@ export function ShellLayout() {
     })
 
     return ordered[0] ?? null
-  }, [protocols])
+  }, [history, protocols])
 
   return (
     <div className="shell">
@@ -39,10 +50,7 @@ export function ShellLayout() {
             />
           </div>
           <div>
-            <p className="eyebrow">{branding.eyebrow}</p>
-            <h1 className="shell__title">{branding.title}</h1>
-            <p className="brand-subtitle">{branding.subtitle}</p>
-            <p className="version-pill">BJJ Timer {APP_VERSION}</p>
+            <h1 className="shell__title">Timer BJJ</h1>
           </div>
         </div>
       </header>
@@ -50,6 +58,11 @@ export function ShellLayout() {
       <main className="shell__content">
         <Outlet />
       </main>
+
+      <footer className="app-footer">
+        <p>BJJ Timer {APP_VERSION}</p>
+        <p>Desenvolvido por Vanderson Oliveira - VibeDoCode</p>
+      </footer>
 
       <nav className="bottom-nav" aria-label="Navegacao principal">
         {navigationItems.slice(0, 2).map(({ to, label, icon: Icon }) => (
@@ -79,7 +92,6 @@ export function ShellLayout() {
           }}
         >
           <span>VAI!</span>
-          <small>{quickLaunchProtocol ? 'Iniciar agora' : 'Escolher modelo'}</small>
         </button>
 
         {navigationItems.slice(2).map(({ to, label, icon: Icon }) => (

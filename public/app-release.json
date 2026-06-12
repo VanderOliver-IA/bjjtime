@@ -1,11 +1,11 @@
 {
-  "appVersion": "V1.00.10",
-  "apkVersion": "1.0.10",
-  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.10.apk",
-  "publishedAt": "2026-06-12T09:10:00.000Z",
+  "appVersion": "V1.00.11",
+  "apkVersion": "1.0.11",
+  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.11.apk",
+  "publishedAt": "2026-06-12T09:45:00.000Z",
   "notes": [
-    "Nova logo padrao aplicada no app usando images/bjjtimer.png.",
-    "Favicon, icones PWA e icones do APK Android regenerados com a nova marca.",
-    "Home reorganizada para priorizar inicio rapido de treino, favoritos e configuracao fora da primeira dobra."
+    "Entrada principal agora abre direto no temporizador do ultimo protocolo executado.",
+    "Na primeira abertura, o app cria e inicia automaticamente o protocolo padrao de aquecimento.",
+    "Header, rodape e barra inferior foram reduzidos para um layout mais limpo e premium."
   ]
 }

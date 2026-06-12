@@ -10,6 +10,8 @@ import {
 import type { CSSProperties } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { defaultBrandLogo } from '../../app/brandAssets'
+import { APP_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
@@ -54,7 +56,7 @@ export function ExecutionPage() {
         <div className="execution-shell">
           <div className="execution-card empty-state">
             <h2>Protocolo nao encontrado</h2>
-            <Button onClick={() => navigate('/')}>Voltar para biblioteca</Button>
+            <Button onClick={() => navigate('/library')}>Voltar para biblioteca</Button>
           </div>
         </div>
       </div>
@@ -462,16 +464,23 @@ function ExecutionRunner({
     <div className="execution-screen">
       <div className="execution-shell">
         <header className="execution-card execution-stage execution-stage--top">
-          <div>
-            <p className="eyebrow">Modo tatame</p>
-            <h1 className="execution-step-name">{protocol.name}</h1>
-            <p className="muted execution-next-step">
-              Proxima etapa: {protocol.steps[currentStepIndex + 1]?.name ?? 'Final do protocolo'}
-            </p>
+          <div className="execution-brand">
+            <div className="execution-brand__mark">
+              <img
+                src={settings.branding.logoDataUrl ?? defaultBrandLogo}
+                alt={`Logo ${settings.branding.title}`}
+              />
+            </div>
+            <div>
+              <p className="execution-brand__label">Timer BJJ</p>
+              <p className="muted execution-next-step">
+                Proxima etapa: {protocol.steps[currentStepIndex + 1]?.name ?? 'Final do protocolo'}
+              </p>
+            </div>
           </div>
-          <Button variant="ghost" onClick={() => navigateTo('/')}>
+          <Button variant="ghost" onClick={() => navigateTo('/library')}>
             <ArrowLeft size={16} />
-            Voltar
+            Biblioteca
           </Button>
         </header>
 
@@ -487,7 +496,7 @@ function ExecutionRunner({
                 <RotateCcw size={16} />
                 Reiniciar
               </Button>
-              <Button variant="ghost" onClick={() => navigateTo('/')}>
+              <Button variant="ghost" onClick={() => navigateTo('/library')}>
                 Biblioteca
               </Button>
             </div>
@@ -574,6 +583,11 @@ function ExecutionRunner({
             </section>
           </>
         )}
+
+        <footer className="app-footer app-footer--execution">
+          <p>BJJ Timer {APP_VERSION}</p>
+          <p>Desenvolvido por Vanderson Oliveira - VibeDoCode</p>
+        </footer>
       </div>
     </div>
   )

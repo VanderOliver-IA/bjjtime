@@ -44,7 +44,7 @@ export function ProtocolAudioPage() {
     return (
       <Card className="empty-state">
         <h3>Salve o protocolo antes de editar o audio.</h3>
-        <Button onClick={() => navigate('/')}>Voltar para biblioteca</Button>
+        <Button onClick={() => navigate('/library')}>Voltar para biblioteca</Button>
       </Card>
     )
   }
