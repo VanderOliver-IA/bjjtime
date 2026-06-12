@@ -2,9 +2,16 @@
 
 ## Versao Atual
 
-`V1.00.11`
+`V1.00.12`
 
 ## Historico
+
+### V1.00.12 - 2026-06-12
+
+- Menu inferior unificado em todas as telas, com submenu de ajustes apontando para ajustes globais, vozes, modelos e modo offline.
+- Tela de execucao ficou mais compacta no mobile, com os tres indicadores lado a lado e controle funcional para mutar o audio rapidamente.
+- Sistema de tema ampliado com modos dark, claro, glass verde e personalizado.
+- Header e tela inicial foram enxugados para uma leitura mais clean, com foco direto no timer e menos botoes redundantes.
 
 ### V1.00.11 - 2026-06-12
 

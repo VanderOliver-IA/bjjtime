@@ -128,8 +128,15 @@ export interface AppSettings {
   defaultBeep: AudioEventSetting['soundType']
   vibrationEnabled: boolean
   keepScreenOn: boolean
-  theme: 'light' | 'dark' | 'system'
+  theme: 'light' | 'dark' | 'glass' | 'custom' | 'system'
   language: 'pt-BR' | 'en-US'
+  customTheme: {
+    primary: string
+    secondary: string
+    background: string
+    panel: string
+    text: string
+  }
   branding: {
     eyebrow: string
     title: string

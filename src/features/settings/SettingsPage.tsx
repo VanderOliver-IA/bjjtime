@@ -212,18 +212,99 @@ export function SettingsPage() {
           <label className="field">
             <span>Tema</span>
             <select
-              value={settings.theme}
+              value={settings.theme === 'system' ? 'dark' : settings.theme}
               onChange={(event) =>
                 updateSettings({
                   theme: event.target.value as typeof settings.theme,
                 })
               }
             >
-              <option value="system">Sistema</option>
+              <option value="dark">Dark</option>
               <option value="light">Claro</option>
-              <option value="dark">Escuro</option>
+              <option value="glass">Glass verde</option>
+              <option value="custom">Personalizado</option>
             </select>
           </label>
+
+          {settings.theme === 'custom' ? (
+            <>
+              <label className="field">
+                <span>Cor principal</span>
+                <input
+                  type="color"
+                  value={settings.customTheme.primary}
+                  onChange={(event) =>
+                    updateSettings({
+                      customTheme: {
+                        ...settings.customTheme,
+                        primary: event.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Cor secundaria</span>
+                <input
+                  type="color"
+                  value={settings.customTheme.secondary}
+                  onChange={(event) =>
+                    updateSettings({
+                      customTheme: {
+                        ...settings.customTheme,
+                        secondary: event.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Fundo</span>
+                <input
+                  type="color"
+                  value={settings.customTheme.background}
+                  onChange={(event) =>
+                    updateSettings({
+                      customTheme: {
+                        ...settings.customTheme,
+                        background: event.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Painel</span>
+                <input
+                  type="color"
+                  value={settings.customTheme.panel}
+                  onChange={(event) =>
+                    updateSettings({
+                      customTheme: {
+                        ...settings.customTheme,
+                        panel: event.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Texto</span>
+                <input
+                  type="color"
+                  value={settings.customTheme.text}
+                  onChange={(event) =>
+                    updateSettings({
+                      customTheme: {
+                        ...settings.customTheme,
+                        text: event.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+            </>
+          ) : null}
 
           <label className="field field--inline">
             <span>Vibracao ligada</span>
@@ -251,7 +332,7 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card>
+      <Card id="voices-library">
         <div className="page-header">
           <div>
             <p className="eyebrow">Menu de vozes</p>
@@ -267,7 +348,7 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card>
+      <Card id="offline-mode">
         <div className="page-header">
           <div>
             <p className="eyebrow">Instalacao Android</p>

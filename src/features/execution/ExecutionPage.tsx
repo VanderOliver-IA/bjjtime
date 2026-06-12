@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { defaultBrandLogo } from '../../app/brandAssets'
 import { APP_VERSION } from '../../app/meta'
+import { AppBottomNav } from '../../components/ui/AppBottomNav'
 import { Button } from '../../components/ui/Button'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
@@ -99,6 +100,7 @@ function ExecutionRunner({
   )
   const [finishedMessage, setFinishedMessage] = useState('Treino finalizado.')
   const [sessionStartedAt, setSessionStartedAt] = useState(() => new Date().toISOString())
+  const [audioEnabled, setAudioEnabled] = useState(protocol.audioEnabled)
   const lastTickRef = useRef<number | null>(null)
   const spokenKeysRef = useRef<Set<string>>(new Set())
   const historyWrittenRef = useRef(false)
@@ -136,7 +138,7 @@ function ExecutionRunner({
     ) => {
       const event = protocol.audioEvents.find((item) => item.eventType === eventType)
 
-      if (!event || !event.enabled || !protocol.audioEnabled) {
+      if (!event || !event.enabled || !audioEnabled) {
         return
       }
 
@@ -158,7 +160,7 @@ function ExecutionRunner({
           : protocol.voicePack,
       })
     },
-    [protocol, settings.defaultVoice, settings.defaultVolume, voiceProfiles],
+    [audioEnabled, protocol, settings.defaultVoice, settings.defaultVolume, voiceProfiles],
   )
 
   const writeHistory = useCallback(
@@ -453,6 +455,18 @@ function ExecutionRunner({
     startStep(0)
   }
 
+  function toggleAudio() {
+    setAudioEnabled((currentValue) => {
+      const nextValue = !currentValue
+
+      if (!nextValue) {
+        audioService.stop()
+      }
+
+      return nextValue
+    })
+  }
+
   function finishProtocol() {
     setFinishedMessage('Treino encerrado manualmente.')
     setStatus('finished')
@@ -473,15 +487,8 @@ function ExecutionRunner({
             </div>
             <div>
               <p className="execution-brand__label">Timer BJJ</p>
-              <p className="muted execution-next-step">
-                Proxima etapa: {protocol.steps[currentStepIndex + 1]?.name ?? 'Final do protocolo'}
-              </p>
             </div>
           </div>
-          <Button variant="ghost" onClick={() => navigateTo('/library')}>
-            <ArrowLeft size={16} />
-            Biblioteca
-          </Button>
         </header>
 
         {status === 'finished' ? (
@@ -518,10 +525,20 @@ function ExecutionRunner({
                   <h2 className="execution-step-name">{currentStep.name}</h2>
                 </div>
                 <div className="chip-row">
-                  <span className="chip execution-chip">
+                  <button
+                    className={[
+                      'chip',
+                      'execution-chip',
+                      audioEnabled ? '' : 'execution-chip--muted',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={toggleAudio}
+                    type="button"
+                  >
                     <Volume2 size={14} />
-                    {protocol.audioEnabled ? 'Audio ativo' : 'Sem audio'}
-                  </span>
+                    {audioEnabled ? 'Audio ligado' : 'Audio mutado'}
+                  </button>
                 </div>
               </div>
 
@@ -588,6 +605,8 @@ function ExecutionRunner({
           <p>BJJ Timer {APP_VERSION}</p>
           <p>Desenvolvido por Vanderson Oliveira - VibeDoCode</p>
         </footer>
+
+        <AppBottomNav />
       </div>
     </div>
   )

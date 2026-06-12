@@ -49,6 +49,13 @@ export function createDefaultSettings(): AppSettings {
     keepScreenOn: true,
     theme: 'dark',
     language: 'pt-BR',
+    customTheme: {
+      primary: '#f25d6e',
+      secondary: '#ff8f8d',
+      background: '#0f141c',
+      panel: '#171d28',
+      text: '#f6f1f2',
+    },
     branding: {
       eyebrow: 'JH BJJ',
       title: 'Centro de Treinamento de Jiu-Jitsu',

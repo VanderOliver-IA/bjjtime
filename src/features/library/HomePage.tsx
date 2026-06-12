@@ -7,7 +7,6 @@ import {
   Heart,
   Play,
   Search,
-  Settings2,
   Trash2,
   Swords,
 } from 'lucide-react'
@@ -88,10 +87,6 @@ export function HomePage() {
           <Download size={16} />
           Instalar app
         </a>
-        <Button variant="ghost" onClick={() => navigate('/settings')}>
-          <Settings2 size={16} />
-          Ajustes
-        </Button>
         {hasUpdate && isInstalledApp && !isChecking ? (
           <Button onClick={() => window.location.assign(updateUrl)}>
             <ArrowUpRight size={16} />
