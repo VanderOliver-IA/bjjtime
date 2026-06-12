@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.08`
+`V1.00.09`
 
 ## Historico
+
+### V1.00.09 - 2026-06-12
+
+- Mudanca oficial do dominio para `www.bjjtimer.vibedocode.pro`.
+- Ajuste de conceito de `BJJ Time` para `BJJ Timer` em nomes visiveis e arquivos de distribuicao.
+- Feed de atualizacao e APK alinhados ao novo endereco publico, mantendo compatibilidade de upgrade do app Android atual.
 
 ### V1.00.08 - 2026-06-11
 

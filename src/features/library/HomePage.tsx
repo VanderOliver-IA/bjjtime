@@ -105,7 +105,7 @@ export function HomePage() {
             <p className="eyebrow">Android offline</p>
             <h2>APK pronto para baixar no celular</h2>
             <p>
-              Toque em instalar para baixar o arquivo `bjjtime-v{APK_VERSION}.apk` direto
+              Toque em instalar para baixar o arquivo `bjjtimer-v{APK_VERSION}.apk` direto
               do servidor e usar o sistema no Android com dados locais.
             </p>
           </div>
