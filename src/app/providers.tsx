@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { useEffect } from 'react'
-import jhLogo from '../../logo_jh_bjj.jpeg'
+import { defaultBrandLogo } from './brandAssets'
 import { useAppStore } from '../state/useAppStore'
 
 export function AppProviders({ children }: PropsWithChildren) {
@@ -32,7 +32,7 @@ export function AppProviders({ children }: PropsWithChildren) {
         <div className="pulse-ring">
           <img
             className="pulse-ring__logo"
-            src={branding.logoDataUrl ?? jhLogo}
+            src={branding.logoDataUrl ?? defaultBrandLogo}
             alt={`Logo ${branding.title}`}
           />
         </div>

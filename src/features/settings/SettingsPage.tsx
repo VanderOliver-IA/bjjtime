@@ -1,13 +1,13 @@
 import { Download, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { defaultBrandLogo } from '../../app/brandAssets'
 import { APK_DOWNLOAD_URL, APK_VERSION } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { useReleaseInfo } from '../../hooks/useReleaseInfo'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
-import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -104,7 +104,7 @@ export function SettingsPage() {
             <div className="settings-logo-panel">
               <img
                 className="settings-logo-preview"
-                src={settings.branding.logoDataUrl ?? jhLogo}
+                src={settings.branding.logoDataUrl ?? defaultBrandLogo}
                 alt={`Logo ${settings.branding.title}`}
               />
               <div className="audio-upload-row">
@@ -273,8 +273,7 @@ export function SettingsPage() {
             <p className="eyebrow">Instalacao Android</p>
             <h2>APK direto no telefone</h2>
             <p>
-              Baixe a versao `v{APK_VERSION}` diretamente do servidor e instale no Android para
-              usar o timer offline com configuracoes locais.
+              {`Baixe a versao v${APK_VERSION} diretamente do servidor e instale no Android para usar o timer offline com configuracoes locais.`}
             </p>
           </div>
         </div>

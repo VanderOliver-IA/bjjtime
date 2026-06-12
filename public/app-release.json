@@ -1,11 +1,11 @@
 {
-  "appVersion": "V1.00.09",
-  "apkVersion": "1.0.9",
-  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.9.apk",
-  "publishedAt": "2026-06-12T00:20:00.000Z",
+  "appVersion": "V1.00.10",
+  "apkVersion": "1.0.10",
+  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.10.apk",
+  "publishedAt": "2026-06-12T09:10:00.000Z",
   "notes": [
-    "Mudanca oficial do endereco publico para www.bjjtimer.vibedocode.pro.",
-    "Ajuste de identidade de BJJ Time para BJJ Timer em nomes visiveis e arquivos distribuidos.",
-    "APK e feed de atualizacao alinhados ao novo dominio."
+    "Nova logo padrao aplicada no app usando images/bjjtimer.png.",
+    "Favicon, icones PWA e icones do APK Android regenerados com a nova marca.",
+    "Home reorganizada para priorizar inicio rapido de treino, favoritos e configuracao fora da primeira dobra."
   ]
 }

@@ -404,6 +404,100 @@ img {
   margin: 0;
 }
 
+.home-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.train-launch-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.train-launch__title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4.4rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.train-launch__summary,
+.train-launch__caption {
+  max-width: 42rem;
+}
+
+.train-launch__caption {
+  margin: 0;
+  color: rgba(255, 240, 242, 0.78);
+}
+
+.train-launch__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.train-launch__stat {
+  padding: 0.85rem 0.95rem;
+  border-radius: 18px;
+  background: rgba(12, 17, 27, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.train-launch__stat span {
+  display: block;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 234, 236, 0.72);
+}
+
+.train-launch__stat strong {
+  display: block;
+  margin-top: 0.28rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(1.3rem, 4vw, 1.85rem);
+}
+
+.train-launch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.train-launch__button {
+  min-width: min(100%, 18rem);
+}
+
+.quick-actions-grid--home {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.favorites-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.favorite-protocol {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 22px;
+  background: var(--color-panel-strong);
+  border: 1px solid var(--color-border);
+}
+
+.favorite-protocol h3 {
+  margin: 0.55rem 0 0.3rem;
+}
+
+.favorite-protocol__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
 .quick-actions-grid,
 .protocol-list,
 .template-grid,
@@ -970,8 +1064,13 @@ img {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .quick-actions-grid--home {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .protocol-list,
-  .template-grid {
+  .template-grid,
+  .favorites-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1002,5 +1101,12 @@ img {
     right: auto;
     width: min(34rem, calc(100vw - 2rem));
     transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .quick-actions-grid--home,
+  .train-launch__stats {
+    grid-template-columns: 1fr;
   }
 }

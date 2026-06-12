@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.09`
+`V1.00.10`
 
 ## Historico
+
+### V1.00.10 - 2026-06-12
+
+- Nova logo padrao consolidada em `images/bjjtimer.png` para interface, favicon, PWA e APK Android.
+- Home reorganizada para focar em iniciar treino, com destaque para ultimo protocolo, acoes rapidas e favoritos.
+- Pacote Android recomposto com novos icones e feed de release atualizado para distribuir a nova versao.
 
 ### V1.00.09 - 2026-06-12
 

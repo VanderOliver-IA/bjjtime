@@ -1,9 +1,9 @@
 import { FolderClock, LayoutTemplate, Mic2, Settings } from 'lucide-react'
 import { useMemo } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { defaultBrandLogo } from '../../app/brandAssets'
 import { APP_VERSION } from '../../app/meta'
 import { useAppStore } from '../../state/useAppStore'
-import jhLogo from '../../../logo_jh_bjj.jpeg'
 
 const navigationItems = [
   { to: '/', label: 'Biblioteca', icon: FolderClock },
@@ -34,7 +34,7 @@ export function ShellLayout() {
         <div className="brand-lockup">
           <div className="brand-mark">
             <img
-              src={branding.logoDataUrl ?? jhLogo}
+              src={branding.logoDataUrl ?? defaultBrandLogo}
               alt={`Logo ${branding.title}`}
             />
           </div>
