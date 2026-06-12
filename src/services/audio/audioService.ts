@@ -9,6 +9,7 @@ interface PlayAudioOptions {
 
 let audioContext: AudioContext | null = null
 let activeCustomAudio: HTMLAudioElement | null = null
+let activeSpeechTimeout: number | null = null
 
 function getAudioContext() {
   if (!audioContext) {
@@ -24,6 +25,7 @@ function playTone(soundType: NonNullable<PlayAudioOptions['soundType']>, volume:
   }
 
   const context = getAudioContext()
+  void context.resume()
   const oscillator = context.createOscillator()
   const gain = context.createGain()
   const now = context.currentTime
@@ -56,6 +58,7 @@ function getSpeechVoices() {
     return []
   }
 
+  window.speechSynthesis.getVoices()
   return window.speechSynthesis.getVoices()
 }
 
@@ -94,19 +97,27 @@ function speak(message: string, volume: number, voicePreset?: string) {
     return
   }
 
+  const synth = window.speechSynthesis
   const utterance = new SpeechSynthesisUtterance(message)
   utterance.lang = 'pt-BR'
   utterance.volume = volume
   utterance.rate = 1
   utterance.pitch = 1
   applyVoicePreset(utterance, voicePreset)
-  window.speechSynthesis.speak(utterance)
+
+  activeSpeechTimeout = window.setTimeout(() => {
+    synth.cancel()
+    synth.resume()
+    synth.speak(utterance)
+    activeSpeechTimeout = null
+  }, 20)
 }
 
 function playCustomAudio(customAudioDataUrl: string, volume: number) {
   stopPlayback()
 
   const audio = new Audio(customAudioDataUrl)
+  audio.preload = 'auto'
   audio.volume = volume
   activeCustomAudio = audio
   audio.onended = () => {
@@ -118,6 +129,11 @@ function playCustomAudio(customAudioDataUrl: string, volume: number) {
 }
 
 function stopPlayback() {
+  if (activeSpeechTimeout !== null) {
+    window.clearTimeout(activeSpeechTimeout)
+    activeSpeechTimeout = null
+  }
+
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel()
   }
@@ -141,6 +157,8 @@ export const audioService = {
     customAudioDataUrl,
     voicePreset,
   }: PlayAudioOptions) {
+    stopPlayback()
+
     if (soundType !== 'none') {
       playTone(soundType, volume)
     }
@@ -148,7 +166,6 @@ export const audioService = {
     if (customAudioDataUrl) {
       playCustomAudio(customAudioDataUrl, volume)
     } else if (message) {
-      stopPlayback()
       speak(message, volume, voicePreset)
     }
 

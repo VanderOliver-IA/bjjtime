@@ -1,12 +1,11 @@
 {
-  "appVersion": "V1.00.12",
-  "apkVersion": "1.0.12",
-  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.12.apk",
-  "publishedAt": "2026-06-12T11:22:24.000Z",
+  "appVersion": "V1.00.13",
+  "apkVersion": "1.0.13",
+  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.13.apk",
+  "publishedAt": "2026-06-12T11:59:25.000Z",
   "notes": [
-    "Indicadores de etapa, treino e restante agora ficam lado a lado em quadros menores no mobile.",
-    "Botao de audio na execucao virou controle funcional para mutar e reativar o audio rapidamente.",
-    "Tema ganhou opcoes dark, claro, glass verde e personalizado, e o menu inferior passou a ter submenu de ajustes para vozes, modelos e modo offline.",
-    "Header e tela inicial ficaram mais compactos, com foco imediato no timer e navegacao inferior mais limpa."
+    "Abertura do app agora carrega o ultimo protocolo ou o padrao ja parado, pronto para iniciar ou trocar na propria tela.",
+    "Tela do timer ganhou seletor direto de protocolos, mute mais confiavel e transicoes de voz mais sincronizadas com a contagem.",
+    "Paleta visual foi rebalanceada para preto, branco, vermelho e cinza, com contraste melhor nos temas dark, claro e glass."
   ]
 }

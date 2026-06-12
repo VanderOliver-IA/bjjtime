@@ -45,7 +45,7 @@ export function AppProviders({ children }: PropsWithChildren) {
 
     root.style.setProperty('--color-primary', customTheme.primary)
     root.style.setProperty('--color-secondary', customTheme.secondary)
-    root.style.setProperty('--color-cta', customTheme.secondary)
+    root.style.setProperty('--color-cta', customTheme.primary)
     root.style.setProperty('--color-background', customTheme.background)
     root.style.setProperty('--color-panel', hexToRgba(customTheme.panel, 0.88))
     root.style.setProperty('--color-panel-strong', hexToRgba(customTheme.panel, 0.98))

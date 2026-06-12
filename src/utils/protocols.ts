@@ -50,11 +50,11 @@ export function createDefaultSettings(): AppSettings {
     theme: 'dark',
     language: 'pt-BR',
     customTheme: {
-      primary: '#f25d6e',
-      secondary: '#ff8f8d',
-      background: '#0f141c',
-      panel: '#171d28',
-      text: '#f6f1f2',
+      primary: '#d62839',
+      secondary: '#6b7280',
+      background: '#0d1117',
+      panel: '#161b22',
+      text: '#f3f4f6',
     },
     branding: {
       eyebrow: 'JH BJJ',

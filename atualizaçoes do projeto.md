@@ -2,9 +2,15 @@
 
 ## Versao Atual
 
-`V1.00.12`
+`V1.00.13`
 
 ## Historico
+
+### V1.00.13 - 2026-06-12
+
+- O app agora abre no ultimo protocolo ou no padrao sem iniciar sozinho, deixando o timer parado e pronto para uso imediato.
+- A tela de execucao ganhou seletor direto de protocolos, controle de mute mais confiavel e ajustes no disparo das falas para melhorar a sincronia com o cronometro.
+- A identidade visual foi rebalanceada para uma base de preto, branco, vermelho e cinza, com contraste melhor principalmente no tema glass.
 
 ### V1.00.12 - 2026-06-12
 
