@@ -4,6 +4,8 @@ B# AllChat - 34-BjjTimer
 
 - 2026-06-11 - Publicacao inicial, correcoes de deploy e personalizacao JH BJJ
 - 2026-06-12 - Auditoria, Otimizacoes Tecnicas e Correcoes Criticas (Sprint 1 & 2)
+- 2026-06-12 - Implementações do Sprint 3 (WakeLock, TTS background, limite de áudio e modularização CSS)
+- 2026-06-12 - Hotfix Crítico de Tradução e Manipulação de DOM (V1.00.15)
 
 ---
 
@@ -104,4 +106,27 @@ Avançar com a execução do Sprint 3 do plano de auditoria, focando na seguran�
 - **Performance de Armazenamento:** Proteção nativa implementada contra estouro de IndexedDB por arquivos gigantescos.
 - **Responsividade de Tela:** Tela mantida ativa em segundo plano com transição suave.
 
+---
 
+## 2026-06-12 - Hotfix Crítico de Tradução e Manipulação de DOM (V1.00.15)
+
+### Objetivo
+
+Corrigir a quebra repentina do temporizador de rounds (crash DOM) em aparelhos móveis ou navegadores com tradução automática ativada (como Safari Translate ou Google Translate), e garantir captura premium para erros de rotas do React Router.
+
+### Decisões principais
+
+- **Prevenção de Tradução do Cronômetro (P0):** Adicionada a propriedade `translate="no"` e a classe CSS `notranslate` aos nós que exibem textos dinâmicos atualizados a cada segundo no cronômetro, no progresso do round, do treino e tempo restante. Isso impede que os mecanismos de tradução dos navegadores alterem a estrutura do DOM, evitando o erro fatal `insertBefore` do React.
+- **Captura de Erros do React Router (P1):** Criado o componente de tela de erro customizado `RouteErrorBoundary` e configurado como `errorElement` global da árvore de rotas no `router.tsx`, substituindo a página de erro cinza padrão do framework.
+
+### Ajustes técnicos executados
+
+- **Hotfix de DOM Mismatch:** Aplicada a marcação de não-tradução nos seletores `.execution-clock`, `.protocol-stat strong` e no painel de estatísticas de tempo restante em `ExecutionPage.tsx`.
+- **Roteamento Seguro:** Introduzido o componente `src/components/ui/RouteErrorBoundary.tsx` que utiliza `useRouteError` do `react-router-dom` para capturar falhas e fornecer botões de recarga rápida e limpeza completa de banco IndexedDB/localStorage.
+- **Estruturação de Rotas:** Centralizadas todas as rotas de páginas em um nó pai `/` configurado com `errorElement`.
+
+### Estado final
+
+- **Build de Produção:** Validado e compilado localmente com sucesso.
+- **Versionamento:** Bump de patch concluído para `V1.00.15` (e `1.0.15` no `package.json`).
+- **Deploy:** Sincronizado no GitHub e ativado com sucesso em produção no Coolify.
