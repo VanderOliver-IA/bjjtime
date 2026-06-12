@@ -16,9 +16,10 @@ import { APK_DOWNLOAD_URL } from '../../app/meta'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { useReleaseInfo } from '../../hooks/useReleaseInfo'
+import { usePrimaryProtocol } from '../../hooks/usePrimaryProtocol'
 import { useAppStore } from '../../state/useAppStore'
 import { formatDateShort, formatDurationLabel, getCategoryLabel } from '../../utils/format'
-import { computeProtocolTotalSeconds } from '../../utils/protocols'
+import { computeProtocolTotalSeconds, sortProtocols } from '../../utils/protocols'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -36,13 +37,7 @@ export function HomePage() {
   }, [search])
 
   const orderedProtocols = useMemo(() => {
-    return [...protocols].sort((left, right) => {
-      if (left.isFavorite !== right.isFavorite) {
-        return left.isFavorite ? -1 : 1
-      }
-
-      return right.updatedAt.localeCompare(left.updatedAt)
-    })
+    return sortProtocols(protocols)
   }, [protocols])
 
   const filteredProtocols = useMemo(() => {
@@ -58,19 +53,7 @@ export function HomePage() {
     })
   }, [deferredSearch, orderedProtocols])
 
-  const primaryProtocol = useMemo(() => {
-    const lastExecution = history[0]
-
-    if (lastExecution) {
-      const matchedProtocol = protocols.find((protocol) => protocol.id === lastExecution.protocolId)
-
-      if (matchedProtocol) {
-        return matchedProtocol
-      }
-    }
-
-    return orderedProtocols[0] ?? null
-  }, [history, orderedProtocols, protocols])
+  const primaryProtocol = usePrimaryProtocol()
 
   const favoriteProtocols = useMemo(
     () => orderedProtocols.filter((protocol) => protocol.isFavorite).slice(0, 5),

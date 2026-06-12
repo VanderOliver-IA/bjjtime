@@ -5,6 +5,7 @@ import { Card } from '../../components/ui/Card'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
 import type { AudioEventType, VoicePhrase, VoiceProfile } from '../../types/domain'
+import { readFileAsDataUrl } from '../../utils/file'
 import { getAudioEventLabel } from '../../utils/format'
 import { createVoicePhrase, createVoiceProfile } from '../../utils/protocols'
 
@@ -610,6 +611,11 @@ export function VoicesPage() {
                       return
                     }
 
+                    if (file.size > 2 * 1024 * 1024) {
+                      window.alert('O arquivo de áudio excede o limite máximo de 2MB.')
+                      return
+                    }
+
                     updatePhrase(phrase.id, {
                       audioDataUrl: await readFileAsDataUrl(file),
                       audioName: file.name,
@@ -719,20 +725,4 @@ function getVoiceCueLabel(eventType: AudioEventType) {
   return 'Troca de etapa'
 }
 
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
 
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result)
-        return
-      }
-
-      reject(new Error('Falha ao carregar audio.'))
-    }
-
-    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar audio.'))
-    reader.readAsDataURL(file)
-  })
-}

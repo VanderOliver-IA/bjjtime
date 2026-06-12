@@ -380,3 +380,13 @@ export function pickVoiceProfilePhrase(
 
   return matchingPhrases[Math.floor(Math.random() * matchingPhrases.length)] ?? null
 }
+
+export function sortProtocols(protocols: Protocol[]): Protocol[] {
+  return [...protocols].sort((left, right) => {
+    if (left.isFavorite !== right.isFavorite) {
+      return left.isFavorite ? -1 : 1
+    }
+
+    return right.updatedAt.localeCompare(left.updatedAt)
+  })
+}

@@ -2,9 +2,17 @@
 
 ## Versao Atual
 
-`V1.00.13`
+`V1.00.14`
 
 ## Historico
+
+### V1.00.14 - 2026-06-12
+
+- Implementado limite máximo de 2MB para upload de arquivos de áudio (vozes customizadas, eventos) e imagens de logo, protegendo o IndexedDB contra consumo excessivo.
+- Adicionado controle dinâmico para re-adquirir `wakeLock` e reiniciar o engine de `speechSynthesis` quando o aplicativo retorna do segundo plano (`visibilitychange`), evitando congelamentos no iOS/Android.
+- Removidos tipos de eventos de áudio legados que não eram disparados no fluxo do timer (`STEP_HALF_TIME`, `REST_END`, `ROUND_WARNING`, `ROUND_END`), limpando definições de tipo e traduções.
+- Modularizada a folha de estilos do projeto, quebrando o arquivo monolítico `index.css` de 1240 linhas em sub-folhas organizadas por responsabilidade (variáveis, base, layout, componentes e páginas).
+- Corrigido erro de TypeScript em `ErrorBoundary.tsx` ajustando o acesso a `children` para `this.props.children`.
 
 ### V1.00.13 - 2026-06-12
 

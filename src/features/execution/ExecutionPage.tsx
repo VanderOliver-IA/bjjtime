@@ -133,6 +133,8 @@ function ExecutionRunner({
   const historyWrittenRef = useRef(false)
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null)
   const stepDeadlineRef = useRef<number | null>(null)
+  const previousMsRef = useRef(initialStepDurationMs)
+  const advanceTimeoutRef = useRef<number | null>(null)
   const currentStep = protocol.steps[currentStepIndex]
 
   const elapsedProtocolSeconds =
@@ -327,6 +329,11 @@ function ExecutionRunner({
 
       stepDeadlineRef.current = null
       spokenKeysRef.current = new Set()
+      previousMsRef.current = nextStep.durationSeconds * 1000
+      if (advanceTimeoutRef.current !== null) {
+        window.clearTimeout(advanceTimeoutRef.current)
+        advanceTimeoutRef.current = null
+      }
       audioService.stop()
       setCurrentStepIndex(stepIndex)
       setRemainingMs(nextStep.durationSeconds * 1000)
@@ -349,7 +356,12 @@ function ExecutionRunner({
       setRemainingMs(safeRemaining)
       setStatus('running')
       spokenKeysRef.current = new Set()
+      previousMsRef.current = safeRemaining
       stepDeadlineRef.current = performance.now() + safeRemaining
+      if (advanceTimeoutRef.current !== null) {
+        window.clearTimeout(advanceTimeoutRef.current)
+        advanceTimeoutRef.current = null
+      }
 
       if (!options?.announce) {
         return
@@ -432,27 +444,38 @@ function ExecutionRunner({
 
   useEffect(() => {
     const canKeepScreenOn = protocol.keepScreenOn || settings.keepScreenOn
-
-    if (!canKeepScreenOn) {
-      return
-    }
-
     const wakeLockApi = (navigator as Navigator & WakeLockCapable).wakeLock
 
-    if (!wakeLockApi) {
-      return
+    async function requestWakeLock() {
+      if (!wakeLockApi || !canKeepScreenOn) return
+      try {
+        const lock = await wakeLockApi.request('screen')
+        wakeLockRef.current = lock
+      } catch {
+        wakeLockRef.current = null
+      }
     }
 
-    void wakeLockApi
-      .request('screen')
-      .then((lock) => {
-        wakeLockRef.current = lock
-      })
-      .catch(() => {
-        wakeLockRef.current = null
-      })
+    if (canKeepScreenOn && wakeLockApi) {
+      void requestWakeLock()
+    }
+
+    async function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        if (canKeepScreenOn && wakeLockApi && !wakeLockRef.current) {
+          await requestWakeLock()
+        }
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+          window.speechSynthesis.resume()
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       void wakeLockRef.current?.release()
     }
   }, [protocol.keepScreenOn, settings.keepScreenOn])
@@ -470,29 +493,36 @@ function ExecutionRunner({
       }
 
       const nextValue = Math.max(0, deadline - performance.now())
+      const prevValue = previousMsRef.current
+      previousMsRef.current = nextValue
 
-      setRemainingMs((currentValue) => {
-        triggerStepWarnings(currentValue, nextValue, currentStepIndex)
+      triggerStepWarnings(prevValue, nextValue, currentStepIndex)
+      setRemainingMs(nextValue)
 
-        if (nextValue > 0) {
-          return nextValue
-        }
-
+      if (nextValue <= 0) {
         window.clearInterval(intervalId)
         playProtocolEvent('STEP_END', currentStep, buildReplacements(currentStepIndex, 0))
 
         if (!currentStep.autoNext) {
           stepDeadlineRef.current = null
           setStatus('paused')
-          return 0
+          return
         }
 
-        window.setTimeout(() => advanceToNextStep(true), 220)
-        return 0
-      })
+        advanceTimeoutRef.current = window.setTimeout(() => {
+          advanceTimeoutRef.current = null
+          advanceToNextStep(true)
+        }, 220)
+      }
     }, 100)
 
-    return () => window.clearInterval(intervalId)
+    return () => {
+      window.clearInterval(intervalId)
+      if (advanceTimeoutRef.current !== null) {
+        window.clearTimeout(advanceTimeoutRef.current)
+        advanceTimeoutRef.current = null
+      }
+    }
   }, [
     advanceToNextStep,
     buildReplacements,

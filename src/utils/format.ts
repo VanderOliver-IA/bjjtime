@@ -29,7 +29,6 @@ const audioEventLabels: Record<AudioEventType, string> = {
   PROTOCOL_END: 'Fim do protocolo',
   PROTOCOL_CANCELLED: 'Cancelamento',
   STEP_START: 'Inicio da etapa',
-  STEP_HALF_TIME: 'Metade da etapa',
   STEP_WARNING_30: 'Aviso 30 segundos',
   STEP_WARNING_20: 'Aviso 20 segundos',
   STEP_WARNING_10: 'Aviso 10 segundos',
@@ -41,10 +40,7 @@ const audioEventLabels: Record<AudioEventType, string> = {
   STEP_TRANSITION: 'Troca de etapa',
   REST_START: 'Inicio da pausa',
   REST_WARNING: 'Aviso da pausa',
-  REST_END: 'Fim da pausa',
   ROUND_START: 'Inicio de round',
-  ROUND_WARNING: 'Aviso de round',
-  ROUND_END: 'Fim de round',
   LAST_ROUND_START: 'Ultimo round',
 }
 

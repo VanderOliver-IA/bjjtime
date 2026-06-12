@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card'
 import { useReleaseInfo } from '../../hooks/useReleaseInfo'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
+import { readFileAsDataUrl } from '../../utils/file'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -118,6 +119,11 @@ export function SettingsPage() {
                       const file = event.target.files?.[0]
 
                       if (!file) {
+                        return
+                      }
+
+                      if (file.size > 2 * 1024 * 1024) {
+                        window.alert('O arquivo de imagem excede o limite máximo de 2MB.')
                         return
                       }
 
@@ -414,20 +420,4 @@ export function SettingsPage() {
   )
 }
 
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
 
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result)
-        return
-      }
-
-      reject(new Error('Falha ao carregar arquivo.'))
-    }
-
-    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar arquivo.'))
-    reader.readAsDataURL(file)
-  })
-}

@@ -1,6 +1,6 @@
 import { Plus, Save, TimerReset, Volume2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useParams, useBlocker } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { DurationInput } from '../../components/ui/DurationInput'
@@ -56,6 +56,49 @@ function ProtocolEditorForm({
     sourceProtocol ? cloneProtocol(sourceProtocol) : createBlankProtocol(settings),
   )
 
+  const initialProtocol = useMemo(() => {
+    return sourceProtocol ? cloneProtocol(sourceProtocol) : createBlankProtocol(settings)
+  }, [sourceProtocol, settings])
+
+  const isDirty = useMemo(() => {
+    return JSON.stringify(draft) !== JSON.stringify(initialProtocol)
+  }, [draft, initialProtocol])
+
+  const isSavingRef = useRef(false)
+
+  const blocker = useBlocker(
+    ({ nextLocation }) => isDirty && !isSavingRef.current && nextLocation.pathname !== window.location.pathname
+  )
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmLeave = window.confirm(
+        'Você tem alterações não salvas. Tem certeza que deseja sair e perder as alterações?'
+      )
+      if (confirmLeave) {
+        blocker.proceed()
+      } else {
+        blocker.reset()
+      }
+    }
+  }, [blocker])
+
+  useEffect(() => {
+    if (!isDirty) {
+      return
+    }
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [isDirty])
+
   const totalSeconds = computeProtocolTotalSeconds(draft)
 
   function updateStep(stepId: string, patch: Partial<Step>) {
@@ -102,6 +145,8 @@ function ProtocolEditorForm({
       window.alert('Toda etapa precisa ter pelo menos 1 segundo.')
       return
     }
+
+    isSavingRef.current = true
 
     const savedProtocol = upsertProtocol({
       ...draft,

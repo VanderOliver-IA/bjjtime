@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card'
 import { audioService } from '../../services/audio/audioService'
 import { useAppStore } from '../../state/useAppStore'
 import type { AudioEventSetting, Protocol } from '../../types/domain'
+import { readFileAsDataUrl } from '../../utils/file'
 import { getAudioEventLabel } from '../../utils/format'
 import { pickVoiceProfilePhrase } from '../../utils/protocols'
 
@@ -209,6 +210,11 @@ function ProtocolAudioForm({
                           return
                         }
 
+                        if (file.size > 2 * 1024 * 1024) {
+                          window.alert('O arquivo de áudio excede o limite máximo de 2MB.')
+                          return
+                        }
+
                         const customAudioDataUrl = await readFileAsDataUrl(file)
 
                         setEvents((currentEvents) =>
@@ -370,20 +376,4 @@ function ProtocolAudioForm({
   )
 }
 
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
 
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result)
-        return
-      }
-
-      reject(new Error('Falha ao carregar audio.'))
-    }
-
-    reader.onerror = () => reject(reader.error ?? new Error('Falha ao carregar audio.'))
-    reader.readAsDataURL(file)
-  })
-}

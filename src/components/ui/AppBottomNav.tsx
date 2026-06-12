@@ -1,7 +1,7 @@
 import { FolderClock, History, Settings2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAppStore } from '../../state/useAppStore'
+import { usePrimaryProtocol } from '../../hooks/usePrimaryProtocol'
 
 const primaryItems = [
   { to: '/library', label: 'Biblioteca', icon: FolderClock },
@@ -17,31 +17,27 @@ const menuItems = [
 
 export function AppBottomNav() {
   const navigate = useNavigate()
-  const protocols = useAppStore((state) => state.protocols)
-  const history = useAppStore((state) => state.history)
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const quickLaunchProtocol = useMemo(() => {
-    const lastExecution = history[0]
+  const quickLaunchProtocol = usePrimaryProtocol()
 
-    if (lastExecution) {
-      const lastProtocol = protocols.find((protocol) => protocol.id === lastExecution.protocolId)
+  useEffect(() => {
+    if (!menuOpen) {
+      return
+    }
 
-      if (lastProtocol) {
-        return lastProtocol
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
       }
     }
 
-    const ordered = [...protocols].sort((left, right) => {
-      if (left.isFavorite !== right.isFavorite) {
-        return left.isFavorite ? -1 : 1
-      }
-
-      return right.updatedAt.localeCompare(left.updatedAt)
-    })
-
-    return ordered[0] ?? null
-  }, [history, protocols])
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuOpen])
 
   return (
     <nav className="bottom-nav" aria-label="Navegacao principal">
@@ -74,7 +70,7 @@ export function AppBottomNav() {
         <span>VAI!</span>
       </button>
 
-      <div className="bottom-nav__menu">
+      <div ref={menuRef} className="bottom-nav__menu">
         {menuOpen ? (
           <div className="bottom-nav__popup" role="menu" aria-label="Atalhos de ajustes">
             {menuItems.map((item) => (

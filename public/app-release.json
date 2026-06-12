@@ -1,11 +1,12 @@
 {
-  "appVersion": "V1.00.13",
-  "apkVersion": "1.0.13",
-  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.13.apk",
-  "publishedAt": "2026-06-12T11:59:25.000Z",
+  "appVersion": "V1.00.14",
+  "apkVersion": "1.0.14",
+  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.14.apk",
+  "publishedAt": "2026-06-12T16:15:00.000Z",
   "notes": [
-    "Abertura do app agora carrega o ultimo protocolo ou o padrao ja parado, pronto para iniciar ou trocar na propria tela.",
-    "Tela do timer ganhou seletor direto de protocolos, mute mais confiavel e transicoes de voz mais sincronizadas com a contagem.",
-    "Paleta visual foi rebalanceada para preto, branco, vermelho e cinza, com contraste melhor nos temas dark, claro e glass."
+    "Bloqueio de uploads maiores que 2MB para preservar o armazenamento local (áudios e imagens de logo).",
+    "Restabelecimento automático do wakeLock e do sintetizador de voz (speechSynthesis) ao retornar ao primeiro plano do aplicativo.",
+    "Remoção de eventos e áudios legados obsoletos do temporizador, simplificando as configurações.",
+    "Modularização da folha de estilos CSS para maior facilidade de manutenção e carregamento otimizado."
   ]
 }

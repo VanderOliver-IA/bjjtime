@@ -25,7 +25,6 @@ export type AudioEventType =
   | 'PROTOCOL_END'
   | 'PROTOCOL_CANCELLED'
   | 'STEP_START'
-  | 'STEP_HALF_TIME'
   | 'STEP_WARNING_30'
   | 'STEP_WARNING_20'
   | 'STEP_WARNING_10'
@@ -37,10 +36,7 @@ export type AudioEventType =
   | 'STEP_TRANSITION'
   | 'REST_START'
   | 'REST_WARNING'
-  | 'REST_END'
   | 'ROUND_START'
-  | 'ROUND_WARNING'
-  | 'ROUND_END'
   | 'LAST_ROUND_START'
 
 export interface AudioEventSetting {
