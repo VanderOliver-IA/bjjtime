@@ -1,12 +1,10 @@
 {
-  "appVersion": "V1.00.14",
-  "apkVersion": "1.0.14",
-  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.14.apk",
-  "publishedAt": "2026-06-12T16:15:00.000Z",
+  "appVersion": "V1.00.15",
+  "apkVersion": "1.0.15",
+  "apkUrl": "https://www.bjjtimer.vibedocode.pro/downloads/bjjtimer-v1.0.15.apk",
+  "publishedAt": "2026-06-12T18:30:00.000Z",
   "notes": [
-    "Bloqueio de uploads maiores que 2MB para preservar o armazenamento local (áudios e imagens de logo).",
-    "Restabelecimento automático do wakeLock e do sintetizador de voz (speechSynthesis) ao retornar ao primeiro plano do aplicativo.",
-    "Remoção de eventos e áudios legados obsoletos do temporizador, simplificando as configurações.",
-    "Modularização da folha de estilos CSS para maior facilidade de manutenção e carregamento otimizado."
+    "Hotfix: Prevenção de quebra do DOM causada por tradutores automáticos de navegadores (como Google Translate e Safari Translate) nas telas de cronômetro.",
+    "Implementação de tratamento robusto para capturar erros de rota no React Router com uma tela de diagnóstico e restauração customizada."
   ]
 }

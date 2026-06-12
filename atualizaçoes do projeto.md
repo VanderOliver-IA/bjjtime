@@ -2,9 +2,14 @@
 
 ## Versao Atual
 
-`V1.00.14`
+`V1.00.15`
 
 ## Historico
+
+### V1.00.15 - 2026-06-12
+
+- Corrigida a quebra repentina do aplicativo (crash DOM) causada por tradutores automáticos nos navegadores (como o tradutor integrado do Safari no iPhone ou o Google Translate no Chrome). Adicionadas as propriedades `translate="no"` e a classe CSS `notranslate` aos elementos que realizam atualizações rápidas na tela (tempo do cronômetro, tempo restante geral e porcentagens de progresso).
+- Reestruturadas as rotas do React Router para incluir um `errorElement` global personalizado (`RouteErrorBoundary`), substituindo a tela cinza padrão do framework por uma interface premium que permite diagnosticar o erro, reiniciar o aplicativo ou restaurar os dados locais corrompidos.
 
 ### V1.00.14 - 2026-06-12
 

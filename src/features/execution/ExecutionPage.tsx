@@ -684,7 +684,9 @@ function ExecutionRunner({
                   <p className="execution-ring__label">
                     {status === 'idle' ? 'Pronto para iniciar' : 'Tempo restante'}
                   </p>
-                  <div className="execution-clock">{formatClock(Math.ceil(remainingMs / 1000))}</div>
+                  <div className="execution-clock notranslate" translate="no">
+                    {formatClock(Math.ceil(remainingMs / 1000))}
+                  </div>
                   <p className="execution-ring__cta">
                     {status === 'idle'
                       ? 'Toque em iniciar ou escolha outro protocolo'
@@ -698,15 +700,17 @@ function ExecutionRunner({
               <div className="execution-meta-grid">
                 <div className="protocol-stat">
                   <span className="protocol-stat__label">Etapa</span>
-                  <strong>{Math.round(stepProgress)}%</strong>
+                  <strong className="notranslate" translate="no">{Math.round(stepProgress)}%</strong>
                 </div>
                 <div className="protocol-stat">
                   <span className="protocol-stat__label">Treino</span>
-                  <strong>{Math.round(protocolProgress)}%</strong>
+                  <strong className="notranslate" translate="no">{Math.round(protocolProgress)}%</strong>
                 </div>
                 <div className="protocol-stat">
                   <span className="protocol-stat__label">Restante</span>
-                  <strong>{formatClock(Math.max(0, totalProtocolSeconds - elapsedProtocolSeconds))}</strong>
+                  <strong className="notranslate" translate="no">
+                    {formatClock(Math.max(0, totalProtocolSeconds - elapsedProtocolSeconds))}
+                  </strong>
                 </div>
               </div>
             </section>

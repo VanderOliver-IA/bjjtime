@@ -10,59 +10,66 @@ import { HomePage } from '../features/library/HomePage'
 import { QuickBuilderPage } from '../features/quick-builders/QuickBuilderPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { TemplatesPage } from '../features/templates/TemplatesPage'
+import { RouteErrorBoundary } from '../components/ui/RouteErrorBoundary'
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <LaunchPage />,
-  },
-  {
-    element: <ShellLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
-        path: '/library',
-        element: <HomePage />,
+        path: '',
+        element: <LaunchPage />,
       },
       {
-        path: '/templates',
-        element: <TemplatesPage />,
+        element: <ShellLayout />,
+        children: [
+          {
+            path: 'library',
+            element: <HomePage />,
+          },
+          {
+            path: 'templates',
+            element: <TemplatesPage />,
+          },
+          {
+            path: 'protocol/new',
+            element: <ProtocolEditorPage />,
+          },
+          {
+            path: 'protocol/:protocolId/edit',
+            element: <ProtocolEditorPage />,
+          },
+          {
+            path: 'protocol/:protocolId/audio',
+            element: <ProtocolAudioPage />,
+          },
+          {
+            path: 'quick/:mode',
+            element: <QuickBuilderPage />,
+          },
+          {
+            path: 'settings',
+            element: <SettingsPage />,
+          },
+          {
+            path: 'voices',
+            element: <VoicesPage />,
+          },
+          {
+            path: 'history',
+            element: <HistoryPage />,
+          },
+        ],
       },
       {
-        path: '/protocol/new',
-        element: <ProtocolEditorPage />,
+        path: 'protocol/:protocolId/run',
+        element: <ExecutionPage />,
       },
       {
-        path: '/protocol/:protocolId/edit',
-        element: <ProtocolEditorPage />,
-      },
-      {
-        path: '/protocol/:protocolId/audio',
-        element: <ProtocolAudioPage />,
-      },
-      {
-        path: '/quick/:mode',
-        element: <QuickBuilderPage />,
-      },
-      {
-        path: '/settings',
-        element: <SettingsPage />,
-      },
-      {
-        path: '/voices',
-        element: <VoicesPage />,
-      },
-      {
-        path: '/history',
-        element: <HistoryPage />,
+        path: '*',
+        element: <Navigate to="/library" replace />,
       },
     ],
-  },
-  {
-    path: '/protocol/:protocolId/run',
-    element: <ExecutionPage />,
-  },
-  {
-    path: '*',
-    element: <Navigate to="/library" replace />,
   },
 ])
